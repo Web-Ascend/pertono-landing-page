@@ -13,11 +13,14 @@
  * nicht hergeben — eine plausibel aussehende falsche Angabe ist gefährlicher
  * als eine offensichtlich leere.
  *
- * Solange hier ein TODO steht oder `legalReviewDone` false ist, liefern alle
- * Seiten automatisch `<meta name="robots" content="noindex">` aus und zeigen
- * einen sichtbaren Entwurfs-Hinweis. Beides verschwindet von selbst, sobald
- * die Angaben vollständig sind UND die anwaltliche Prüfung bestätigt wurde —
- * es gibt keinen zweiten Schalter, der vergessen werden kann.
+ * Die Rechtsseiten (/datenschutz/, /impressum/) tragen ihr noindex DAUERHAFT
+ * und unabhängig von dieser Datei — sie sollen nie in einem Suchindex landen
+ * (die Play Console braucht nur Erreichbarkeit, keine Indexierung). Das Gate
+ * hier unten steuert nur noch die Startseite und die Entwurfs-Hinweise:
+ * solange ein TODO offen oder `legalReviewDone` false ist, bleibt auch die
+ * Startseite auf noindex. Das löst sich von selbst, sobald alles vollständig
+ * UND anwaltlich geprüft ist — es gibt keinen zweiten Schalter, der
+ * vergessen werden kann.
  */
 
 /** Sichtbarer Platzhalter, identisch zu den Quelltexten im pertono-Repo. */
@@ -25,7 +28,7 @@ export const TODO = "[ausfüllen]";
 
 /**
  * Erst auf `true` setzen, wenn der Text anwaltlich geprüft wurde.
- * Vorher bleiben alle Seiten auf noindex — unabhängig von den Feldern unten.
+ * Vorher bleibt die Startseite auf noindex — unabhängig von den Feldern unten.
  */
 export const legalReviewDone = false;
 
@@ -82,5 +85,8 @@ const allValues = [
 /** True, solange mindestens ein Pflichtfeld noch den Platzhalter trägt. */
 export const hasOpenTodos = allValues.includes(TODO);
 
-/** Von den Seiten konsumiert: noindex, bis alles vollständig UND geprüft ist. */
+/**
+ * Von der STARTSEITE konsumiert: noindex, bis alles vollständig UND geprüft
+ * ist. Die Rechtsseiten setzen ihr noindex dauerhaft selbst.
+ */
 export const noindex = hasOpenTodos || !legalReviewDone;

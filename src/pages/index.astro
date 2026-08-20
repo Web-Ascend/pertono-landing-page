@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PertonoLogo from "../components/PertonoLogo.astro";
-import { hasOpenTodos } from "../data/legal";
+import { hasOpenTodos, noindex } from "../data/legal";
 import { platforms, statusLabel } from "../data/platforms";
 
 /**
@@ -26,6 +26,7 @@ const structuredData = {
   title="Pertono — Vereinsverwaltung, die aufs Handy passt"
   noSuffix
   description="Mitglieder, Beiträge, SEPA-Lastschrift und Kassenbuch für deinen Verein — auf Android, im Browser und bald auf iOS. Server in der EU."
+  noindex={noindex}
 >
   <section class="hero">
     <PertonoLogo d={40} withSubline />

@@ -5,9 +5,11 @@
 > in **`src/data/legal.ts`** sind mit den belegbaren Daten aus den anderen
 > Repos gefüllt (Impressum/Datenschutz der live lets-rave.com, pertono-Repo);
 > die restlichen Platzhalter (`[ausfüllen]`) geben die Repos nicht her und
-> dürfen nicht geraten werden. Solange Felder offen sind oder die anwaltliche
-> Prüfung aussteht, liefern alle Seiten automatisch
-> `<meta name="robots" content="noindex">` aus.
+> dürfen nicht geraten werden. Die Rechtsseiten (`/datenschutz/`,
+> `/impressum/`) tragen **dauerhaft** `<meta name="robots" content="noindex">`
+> — sie sollen nie in einem Suchindex landen; die Play Console braucht nur
+> Erreichbarkeit, keine Indexierung. Solange Felder offen sind oder die
+> anwaltliche Prüfung aussteht, trägt zusätzlich auch die Startseite `noindex`.
 >
 > Noch offen:
 >
@@ -24,9 +26,9 @@
 > § 18-MStV-Verantwortlicher, Aufsichtsbehörde LDI NRW, Auftragsverarbeiter
 > Supabase und Firebase Cloud Messaging, „Stand"-Datum.
 >
-> Das `noindex` verschwindet von selbst, sobald alle Felder gefüllt sind **und**
-> `legalReviewDone = true` ist — es gibt keinen zweiten Schalter, der vergessen
-> werden kann.
+> Das `noindex` der **Startseite** verschwindet von selbst, sobald alle Felder
+> gefüllt sind **und** `legalReviewDone = true` ist — es gibt keinen zweiten
+> Schalter, der vergessen werden kann. Die Rechtsseiten bleiben immer `noindex`.
 
 Die Landing Page von [Pertono](https://pertono.com) — Vereinsverwaltung fürs
 Handy. Statisch (Astro), zeigt die unterstützten Plattformen (Android, Web,
@@ -105,6 +107,6 @@ vor dem Upload, GitHub-gehosteter Runner statt self-hosted, weil dieses Repo
 ## Danach: Google Play Console
 
 Sobald die Identitätsfelder gefüllt sind, `legalReviewDone = true` gesetzt ist
-(damit fällt das `noindex` weg) und die Seite live ist:
-`https://pertono.com/datenschutz/` als Datenschutz-URL im Play Console
-App-Content eintragen.
+und die Seite live ist: `https://pertono.com/datenschutz/` als Datenschutz-URL
+im Play Console App-Content eintragen. Das dauerhafte `noindex` der
+Rechtsseiten stört dabei nicht — die URL muss nur öffentlich erreichbar sein.
