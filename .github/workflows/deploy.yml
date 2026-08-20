@@ -1,0 +1,128 @@
+name: Deploy to Checkdomain
+
+# Läuft bei jedem Push auf main — oder manuell über den Actions-Tab.
+#
+# Modelliert nach dem Deploy der lets-rave Landing Page, die ebenfalls bei
+# Checkdomain liegt: bauen, dann per lftp-SFTP-Mirror auf den Webspace
+# spiegeln. Zwei bewusste Abweichungen:
+#  - Vor dem Upload steht ein Astro-Build (lets-rave ist statisches HTML,
+#    diese Site wird aus src/ gebaut; hochgeladen wird nur dist/).
+#  - GitHub-gehosteter Runner statt self-hosted: dieses Repo ist öffentlich,
+#    Actions-Minuten kosten hier nichts — und ein self-hosted Runner an einem
+#    öffentlichen Repo wäre ein Sicherheitsrisiko (Fork-PRs).
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Deploys nicht parallel laufen lassen; einen LAUFENDEN Deploy nie abbrechen
+# (halb gespiegelte Site). Ein wartender wird durch den neuesten ersetzt.
+# Der Deploy läuft über SFTP mit eigenen Secrets — der GITHUB_TOKEN wird
+# nur zum Auschecken gebraucht.
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Die SFTP-Secrets liegen als Environment-Secrets in `production`, nicht
+    # als Repo-Secrets: das Repo ist öffentlich, und über die Deployment-
+    # Branch-Regel des Environments (nur main) kommt kein Workflow auf einem
+    # Seitenbranch an die Zugangsdaten heran.
+    environment:
+      name: production
+      url: https://pertono.com
+    # Hänger-Schutz: ohne Timeout blockiert ein hängender Step den Job bis
+    # zum 6-Stunden-Default.
+    timeout-minutes: 20
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      # ── Vorab prüfen, dass die SFTP-Secrets gesetzt sind ──
+      # Ohne diesen Check scheitert lftp mit kryptischen Meldungen — z. B.
+      # "Bad port", weil ein leeres Port-Secret den Befehl zerschießt.
+      # SFTP_REMOTE_PATH ist hier zusätzlich ein Secret (bei lets-rave steht
+      # der Pfad im Klartext im Workflow): dieses Repo ist öffentlich, und der
+      # vhost-Pfad verrät den internen Checkdomain-Hostnamen.
+      - name: SFTP-Secrets prüfen
+        env:
+          SFTP_HOST:        ${{ secrets.SFTP_HOST }}
+          SFTP_USER:        ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD:    ${{ secrets.SFTP_PASSWORD }}
+          SFTP_PORT:        ${{ secrets.SFTP_PORT }}
+          SFTP_REMOTE_PATH: ${{ secrets.SFTP_REMOTE_PATH }}
+        run: |
+          missing=""
+          [ -z "$SFTP_HOST" ]        && missing="$missing SFTP_HOST"
+          [ -z "$SFTP_USER" ]        && missing="$missing SFTP_USER"
+          [ -z "$SFTP_PASSWORD" ]    && missing="$missing SFTP_PASSWORD"
+          [ -z "$SFTP_PORT" ]        && missing="$missing SFTP_PORT"
+          [ -z "$SFTP_REMOTE_PATH" ] && missing="$missing SFTP_REMOTE_PATH"
+          if [ -n "$missing" ]; then
+            echo "::error::Fehlende SFTP-Secrets:$missing — als Environment-Secrets im Environment 'production' anlegen (siehe README)"
+            exit 1
+          fi
+
+      - name: lftp installieren
+        run: |
+          if ! command -v lftp >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          fi
+          lftp --version | head -1
+
+      # ── Per SFTP zu Checkdomain spiegeln ──
+      # lftp mirror --reverse --delete macht einen echten Abgleich: lädt nur
+      # geänderte Dateien hoch und entfernt auf dem Server nur die verwaisten
+      # (umbenannte/gelöschte). Der Zielordner selbst bleibt erhalten.
+      # Dotfiles/-ordner werden ausgeschlossen — server-seitige wie
+      # .well-known werden weder hochgeladen noch gelöscht, damit z. B.
+      # SSL/Let's-Encrypt nicht zerschossen wird.
+      - name: SFTP Mirror Deploy
+        env:
+          SFTP_HOST:        ${{ secrets.SFTP_HOST }}
+          SFTP_USER:        ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD:    ${{ secrets.SFTP_PASSWORD }}
+          SFTP_PORT:        ${{ secrets.SFTP_PORT }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+          REMOTE_PATH:      ${{ secrets.SFTP_REMOTE_PATH }}
+        run: |
+          # ── Host-Key-Verifikation (Schutz gegen MITM auf dem Deploy-Kanal) ──
+          # Ist das Secret SFTP_KNOWN_HOSTS gesetzt (Ausgabe von
+          #   ssh-keyscan -p <SFTP_PORT> <SFTP_HOST>), wird der Host-Key streng
+          # geprüft. Ohne das Secret läuft der Deploy trotzdem (nicht
+          # brechend), aber mit deutlicher Warnung im Log.
+          if [ -n "$SFTP_KNOWN_HOSTS" ]; then
+            KH="$RUNNER_TEMP/known_hosts"
+            printf '%s\n' "$SFTP_KNOWN_HOSTS" > "$KH"
+            SFTP_VERIFY=$(printf 'set sftp:auto-confirm no\nset sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=%s"' "$KH")
+          else
+            echo "::warning::SFTP_KNOWN_HOSTS nicht gesetzt — der SFTP-Host-Key wird NICHT verifiziert (MITM-Risiko). Absichern: 'ssh-keyscan -p <SFTP_PORT> <SFTP_HOST>' ausführen und die Ausgabe als Repository-Secret SFTP_KNOWN_HOSTS hinterlegen."
+            SFTP_VERIFY='set sftp:auto-confirm yes'
+          fi
+
+          lftp sftp://"$SFTP_HOST":"$SFTP_PORT" <<EOF
+          $SFTP_VERIFY
+          set net:max-retries 2
+          set net:timeout 20
+          user "$SFTP_USER" "$SFTP_PASSWORD"
+          mirror --reverse --delete --verbose --exclude "^\." ./dist/ "$REMOTE_PATH"
+          bye
+          EOF

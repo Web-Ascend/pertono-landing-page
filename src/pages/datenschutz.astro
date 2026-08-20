@@ -1,0 +1,112 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  hasOpenTodos,
+  lastUpdated,
+  processors,
+  provider,
+  TODO,
+} from "../data/legal";
+
+/**
+ * Inhaltlich übernommen aus pertono/website/src/pages/datenschutz.astro.
+ *
+ * Der fachliche Teil (verarbeitete Daten, Rechtsgrundlagen, Auftragsverarbeitung
+ * nach Art. 28 DSGVO, Speicherort EU, Betroffenenrechte) bildet ab, was Pertono
+ * technisch tatsächlich tut. Die Identitätsangaben kommen aus
+ * src/data/legal.ts und sind dort bewusst als TODO markiert — nichts hier darf
+ * erfunden werden. Vor Veröffentlichung anwaltlich prüfen lassen.
+ */
+---
+
+<BaseLayout
+  title="Datenschutzerklärung"
+  description="Wie Pertono personenbezogene Daten verarbeitet: Zwecke, Rechtsgrundlagen, Speicherort in der EU und die Rechte betroffener Personen."
+>
+  <h1>Datenschutzerklärung</h1>
+
+  {
+    hasOpenTodos && (
+      <p class="notice" role="note">
+        <strong>Entwurf.</strong> Der Aufbau bildet ab, was Pertono technisch
+        tatsächlich verarbeitet. Vor dem Start müssen die mit
+        <code>{TODO}</code> markierten Angaben ergänzt und der Text anwaltlich
+        geprüft werden.
+      </p>
+    )
+  }
+
+  <h2>1. Verantwortlicher</h2>
+  <p>
+    {provider.companyName}<br />
+    {provider.street}<br />
+    {provider.zipCity}<br />
+    E-Mail: <a href={`mailto:${provider.email}`}>{provider.email}</a><br />
+    Datenschutzbeauftragte Person: {provider.dataProtectionOfficer}
+  </p>
+
+  <h2>2. Zwei Rollen, zwei Verantwortlichkeiten</h2>
+  <p>
+    Für diese Website und für Konten von Nutzerinnen und Nutzern sind wir
+    Verantwortlicher im Sinne der DSGVO. Für die Mitgliederdaten, die ein Verein
+    in Pertono erfasst, ist der jeweilige Verein Verantwortlicher; wir verarbeiten
+    sie als Auftragsverarbeiter nach Art. 28 DSGVO. Den zugehörigen
+    Auftragsverarbeitungsvertrag stellen wir jedem Verein bereit.
+  </p>
+
+  <h2>3. Welche Daten wir verarbeiten</h2>
+  <h3>Konto</h3>
+  <p>
+    Name, E-Mail-Adresse und ein Passwort-Hash. Rechtsgrundlage ist Art. 6
+    Abs. 1 lit. b DSGVO — ohne diese Daten gibt es kein Konto.
+  </p>
+  <h3>Vereins- und Mitgliederdaten</h3>
+  <p>
+    Namen, Kontaktdaten, Eintritts- und Austrittsdaten, Abteilungszugehörigkeit,
+    Geburtsdatum (für altersabhängige Beiträge), Beitragszuordnungen sowie
+    SEPA-Mandate mit Kontoverbindung. Diese Daten verarbeiten wir ausschließlich
+    im Auftrag des jeweiligen Vereins.
+  </p>
+  <h3>Buchhaltung</h3>
+  <p>
+    Buchungen und Belege des Vereins. Buchungen sind nachträglich nicht
+    veränderbar; Korrekturen erfolgen als Stornobuchung. Das ist keine
+    technische Entscheidung, sondern eine Anforderung der GoBD.
+  </p>
+
+  <h2>4. Speicherort</h2>
+  <p>
+    Alle Daten liegen auf Servern in der Europäischen Union. Auftragsverarbeiter:
+    {processors.hosting} (Hosting), {processors.push} (Push-Benachrichtigungen),
+    {processors.email} (E-Mail-Versand).
+  </p>
+
+  <h2>5. Speicherdauer</h2>
+  <p>
+    Kontodaten löschen wir, wenn das Konto gelöscht wird. Für buchhalterische
+    Daten gelten die gesetzlichen Aufbewahrungsfristen von bis zu zehn Jahren
+    (§ 147 AO, § 257 HGB). Diese Fristen gehen einem Löschverlangen vor: Wir
+    sperren die betroffenen Daten dann für die weitere Verarbeitung, statt sie
+    zu löschen.
+  </p>
+
+  <h2>6. Deine Rechte</h2>
+  <p>
+    Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17),
+    Einschränkung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch
+    (Art. 21). Betrifft dein Anliegen Mitgliederdaten, wende dich bitte zuerst an
+    deinen Verein — dieser ist dafür verantwortlich. Außerdem steht dir ein
+    Beschwerderecht bei einer Aufsichtsbehörde zu. Zuständige Aufsichtsbehörde:
+    {provider.supervisoryAuthority}
+  </p>
+
+  <h2>7. Diese Website</h2>
+  <p>
+    Diese Seiten sind statisch, setzen keine Cookies und binden keine externen
+    Dienste ein. Es findet kein Tracking statt. Der Hoster speichert
+    Server-Logfiles mit gekürzter IP-Adresse; Rechtsgrundlage ist Art. 6 Abs. 1
+    lit. f DSGVO.
+  </p>
+
+  <p class="updated">Stand: {lastUpdated}</p>
+</BaseLayout>

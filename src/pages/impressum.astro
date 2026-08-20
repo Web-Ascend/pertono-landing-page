@@ -1,0 +1,66 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { hasOpenTodos, provider, TODO } from "../data/legal";
+
+/**
+ * Inhaltlich übernommen aus pertono/website/src/pages/impressum.astro.
+ *
+ * Ein Impressum ist Pflicht (§ 5 DDG, früher § 5 TMG), und ein unvollständiges
+ * oder falsches ist abmahnfähig. Die Angaben kommen aus src/data/legal.ts und
+ * bleiben dort bewusst sichtbare Platzhalter, statt mit erfundenen Daten
+ * gefüllt zu werden: eine plausibel aussehende falsche Adresse ist weit
+ * gefährlicher als eine offensichtlich leere, weil sie niemandem auffällt.
+ */
+---
+
+<BaseLayout
+  title="Impressum"
+  description="Anbieterkennzeichnung nach § 5 DDG für Pertono, Vereinsverwaltung für den deutschsprachigen Raum."
+>
+  <h1>Impressum</h1>
+
+  {
+    hasOpenTodos && (
+      <p class="notice" role="note">
+        <strong>Diese Seite ist noch nicht vollständig.</strong> Vor dem
+        öffentlichen Start müssen alle mit <code>{TODO}</code> markierten
+        Angaben in <code>src/data/legal.ts</code> ergänzt werden.
+      </p>
+    )
+  }
+
+  <h2>Angaben gemäß § 5 DDG</h2>
+  <p>
+    {provider.companyName}<br />
+    {provider.street}<br />
+    {provider.zipCity}<br />
+    {provider.country}
+  </p>
+
+  <h2>Vertreten durch</h2>
+  <p>{provider.representative}</p>
+
+  <h2>Kontakt</h2>
+  <p>
+    E-Mail: <a href={`mailto:${provider.email}`}>{provider.email}</a><br />
+    Telefon: {provider.phone}
+  </p>
+
+  <h2>Registereintrag</h2>
+  <p>
+    Registergericht: {provider.registerCourt}<br />
+    Registernummer: {provider.registerNumber}
+  </p>
+
+  <h2>Umsatzsteuer-Identifikationsnummer</h2>
+  <p>Gemäß § 27 a Umsatzsteuergesetz: {provider.vatId}</p>
+
+  <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+  <p>{provider.contentResponsible}</p>
+
+  <h2>Verbraucherstreitbeilegung</h2>
+  <p>
+    Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren
+    vor einer Verbraucherschlichtungsstelle teilzunehmen.
+  </p>
+</BaseLayout>

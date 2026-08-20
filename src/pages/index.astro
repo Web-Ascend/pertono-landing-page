@@ -1,0 +1,193 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PertonoLogo from "../components/PertonoLogo.astro";
+import { hasOpenTodos } from "../data/legal";
+import { platforms, statusLabel } from "../data/platforms";
+
+/**
+ * Die Landing Page: von hier aus erreicht man die App auf jeder unterstützten
+ * Plattform — und die Rechtsseiten. Der Produkt-Pitch ist bewusst kurz; die
+ * Texte sind aus pertono/website übernommen, nicht neu erfunden.
+ */
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Pertono",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Android, Web",
+  inLanguage: "de",
+  description:
+    "Vereinsverwaltung fürs Handy: Mitglieder, Beiträge, SEPA-Lastschrift, Kassenbuch und Termine für ehrenamtliche Vorstände.",
+};
+---
+
+<BaseLayout
+  title="Pertono — Vereinsverwaltung, die aufs Handy passt"
+  noSuffix
+  description="Mitglieder, Beiträge, SEPA-Lastschrift und Kassenbuch für deinen Verein — auf Android, im Browser und bald auf iOS. Server in der EU."
+>
+  <section class="hero">
+    <PertonoLogo d={40} withSubline />
+    <h1>Vereinsverwaltung, die aufs Handy passt</h1>
+    <p class="lead">
+      Die meisten Vereinsprogramme sind für Büroarbeit gebaut. Vereinsarbeit
+      passiert aber abends auf dem Sofa, zwischen Training und Abendessen.
+      Pertono ist dafür gemacht: jede Kernaufgabe in unter zwei Minuten, ohne
+      Handbuch. Mitgliederdaten liegen auf Servern in der Europäischen Union.
+    </p>
+  </section>
+
+  <section aria-labelledby="plattformen">
+    <h2 id="plattformen">Pertono nutzen</h2>
+    <ul class="platforms">
+      {
+        platforms.map((platform) => (
+          <li class="platform">
+            <h3>{platform.name}</h3>
+            <p class="platform-desc">{platform.description}</p>
+            {platform.status === "live" && platform.href ? (
+              <a class="platform-link" href={platform.href}>
+                {platform.linkLabel ?? "Öffnen"}
+              </a>
+            ) : (
+              <p class="platform-status">
+                {statusLabel[platform.status as "soon" | "planned"]}
+              </p>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="rechtliches">
+    <h2 id="rechtliches">Rechtliches</h2>
+    <ul class="doc-list">
+      <li>
+        <a href="/datenschutz/">Datenschutzerklärung</a>
+        <p>
+          Welche Daten Pertono verarbeitet, auf welcher Rechtsgrundlage, wo sie
+          gespeichert werden und welche Rechte betroffene Personen haben.
+        </p>
+      </li>
+      <li>
+        <a href="/impressum/">Impressum</a>
+        <p>Anbieterkennzeichnung nach § 5 DDG.</p>
+      </li>
+    </ul>
+  </section>
+
+  {
+    hasOpenTodos && (
+      <p class="notice" role="note">
+        <strong>Entwurf.</strong> Die Anbieterangaben auf den Rechtsseiten sind
+        noch nicht vollständig; die Seiten sind deshalb von der Indexierung
+        durch Suchmaschinen ausgenommen.
+      </p>
+    )
+  }
+
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(structuredData)}
+  />
+</BaseLayout>
+
+<style>
+  .hero {
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    margin-top: 1.75rem;
+  }
+
+  .lead {
+    font-size: 1.0625rem;
+    max-width: 42rem;
+  }
+
+  .platforms {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1rem;
+  }
+
+  .platform {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .platform h3 {
+    margin: 0;
+  }
+
+  .platform-desc {
+    margin: 0.35rem 0 0.75rem;
+    color: var(--muted);
+    flex: 1;
+  }
+
+  .platform-link {
+    display: inline-block;
+    align-self: start;
+    background: var(--brand);
+    color: var(--on-brand);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius);
+  }
+
+  .platform-link:hover {
+    background: var(--brand-dark);
+  }
+
+  .platform-status {
+    align-self: start;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    margin: 0;
+  }
+
+  .doc-list {
+    list-style: none;
+    margin: 1.5rem 0 2rem;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .doc-list li {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+    padding: 1rem 1.25rem;
+  }
+
+  .doc-list a {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .doc-list p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+  }
+</style>

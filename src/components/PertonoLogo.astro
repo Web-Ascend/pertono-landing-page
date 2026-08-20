@@ -1,0 +1,164 @@
+---
+/**
+ * The Pertono lockup: the sign, the wordmark, and optionally the subline.
+ *
+ * Everything scales from `d`, the ring diameter, exactly as brand/README.md
+ * lays it out — so a caller picks one number and cannot get the proportions
+ * wrong. `d` is not the rendered width: the sign alone is 1.45 diameters
+ * across, and the lockup is that plus the gap and the wordmark.
+ *
+ * Colour follows the page rather than a prop: `--logo-front` and friends are
+ * defined once in BaseLayout and already flip under `prefers-color-scheme`, so
+ * a logo dropped anywhere on the site is correct without being told where it
+ * is. `variant` exists for the exceptions — a logo on a navy panel that stays
+ * navy in light mode.
+ */
+interface Props {
+  /** Ring diameter in px. Every other measurement derives from it. */
+  d?: number;
+  /**
+   * Force the colouring instead of following the page. `mono` renders the
+   * single-colour sign, knockout and all, in the surrounding text colour.
+   */
+  variant?: "light" | "dark" | "mono";
+  /** Adds "Vereinsverwaltung" under the wordmark. */
+  withSubline?: boolean;
+  /**
+   * The sign without the wordmark. Required below 24px overall width, where
+   * the wordmark stops being legible while the sign is still fine.
+   */
+  markOnly?: boolean;
+  class?: string;
+}
+
+const {
+  d = 40,
+  variant,
+  withSubline = false,
+  markOnly = false,
+  class: className,
+} = Astro.props;
+
+if (!markOnly && d < 24) {
+  throw new Error(
+    `PertonoLogo: below 24px the lockup may not be used (d=${d}). Pass markOnly.`,
+  );
+}
+
+// The overrides, empty when the logo follows the page. `mono` takes both rings
+// from currentColor and earns the knockout that keeps them readable as one
+// linked pair.
+const overrides: Record<string, string> = {
+  light: "--logo-front:#1F3A5F;--logo-word:#1F3A5F;--logo-subline:#4F7396",
+  dark: "--logo-front:#F4F2EE;--logo-word:#F4F2EE;--logo-subline:#7B98B8",
+  mono:
+    "--logo-front:currentColor;--logo-back:currentColor;" +
+    "--logo-word:currentColor;--logo-subline:currentColor",
+};
+const override = variant ? overrides[variant] : "";
+
+const style = `--d:${d}px;${override}`;
+// The knockout mask needs an id, and two logos on one page must not share
+// one. Nothing about the instance is unique, so the id is drawn rather than
+// derived.
+const maskId = `pertono-knockout-${crypto.randomUUID().slice(0, 8)}`;
+// The viewBox is 174 units for a 120-unit ring, which is the same 1.45 box the
+// CSS uses — so one number sizes both.
+const box = d * 1.45;
+---
+
+<span class:list={["logo", className]} style={style}>
+  <svg
+    class="logo__mark"
+    width={box}
+    height={box}
+    viewBox="0 0 174 174"
+    aria-hidden="true"
+    focusable="false"
+  >
+    {
+      variant === "mono" ? (
+        <>
+          {/* The knockout: two rings in one colour read as a blob, so the back
+              one is interrupted where the front crosses it. 1.6 stroke widths
+              wide, as brand/svg/mark-mono.svg has it. */}
+          <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="174" height="174">
+            <rect x="0" y="0" width="174" height="174" fill="#fff" />
+            <circle cx="114" cy="114" r="50" fill="none" stroke="#000" stroke-width="30" />
+          </mask>
+          <circle
+            cx="60"
+            cy="60"
+            r="50"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="20"
+            mask={`url(#${maskId})`}
+          />
+          <circle cx="114" cy="114" r="50" fill="none" stroke="currentColor" stroke-width="20" />
+        </>
+      ) : (
+        <>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--logo-back)" stroke-width="20" />
+          <circle cx="114" cy="114" r="50" fill="none" stroke="var(--logo-front)" stroke-width="20" />
+        </>
+      )
+    }
+  </svg>
+
+  {
+    !markOnly && (
+      <span class="logo__text">
+        {/* Live text, never a path: it stays selectable, it is what a screen
+            reader announces, and it is crisp at any density. */}
+        <span class="logo__wordmark">pertono</span>
+        {withSubline && <span class="logo__subline">Vereinsverwaltung</span>}
+      </span>
+    )
+  }
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    /* Brand gap: 0.42 diameters. */
+    gap: calc(var(--d) * 0.42);
+    /* The lockup's proportions are fixed by construction, so it does not
+       inherit the page's font size — a caller changes --d instead, which moves
+       the sign and the wordmark together. */
+    font-size: var(--d);
+    line-height: 1;
+  }
+
+  .logo__mark {
+    flex: none;
+    display: block;
+  }
+
+  .logo__text {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--d) * 0.1);
+    min-width: 0;
+  }
+
+  .logo__wordmark {
+    /* Space Grotesk's x-height is 0.47em, so 1.05 diameters of font size is
+       the 0.49 * D x-height brand/README.md specifies. */
+    font: 700 calc(var(--d) * 1.05) / 1 "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.045em;
+    text-transform: lowercase;
+    color: var(--logo-word);
+  }
+
+  .logo__subline {
+    font: 400 calc(var(--d) * 0.2) / 1 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--logo-subline);
+    /* The tracking is added after the last letter too, which visually pushes
+       the line off-centre against the wordmark above it. */
+    margin-right: -0.3em;
+  }
+</style>
