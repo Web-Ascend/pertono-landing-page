@@ -41,12 +41,8 @@ export const provider = {
   phone: "+49 1522 6886 187",
   /** Einzelunternehmen ohne Handelsregistereintrag (kein e.K.). */
   registerEntry: "Als Einzelunternehmen nicht im Handelsregister eingetragen.",
-  /**
-   * USt-IdNr. nach § 27a UStG — aus den Repos nicht belegbar (auch das
-   * lets-rave-Impressum nennt keine). Falls vorhanden eintragen, sonst z. B.
-   * "Keine Umsatzsteuer-Identifikationsnummer vorhanden."
-   */
-  vatId: TODO,
+  /** Vom Inhaber bestätigt: Einzelunternehmer ohne USt-IdNr. */
+  vatId: "Keine Umsatzsteuer-Identifikationsnummer nach § 27a UStG vorhanden.",
   /** Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV. */
   contentResponsible: "Jan Solga, Kettelerstraße 42, 48147 Münster",
   /**

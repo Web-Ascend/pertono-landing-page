@@ -11,7 +11,6 @@
 >
 > Noch offen:
 >
-> - [ ] USt-IdNr. (`vatId`) — eintragen oder Hinweis „keine vorhanden"
 > - [ ] Auftragsverarbeiter E-Mail-Versand (`processors.email`) — im Backend
 >       bisher ein Mock; laut Code-Kommentar Postmark oder Brevo geplant. Erst
 >       eintragen, wenn der Anbieter feststeht.
@@ -21,6 +20,7 @@
 >
 > Bereits gefüllt (Quellen im Datei-Kommentar): Anbieter Jan Solga
 > (Einzelunternehmer, Münster), Telefon, Registereintrag („nicht eingetragen"),
+> USt-IdNr. („keine vorhanden", vom Inhaber bestätigt),
 > § 18-MStV-Verantwortlicher, Aufsichtsbehörde LDI NRW, Auftragsverarbeiter
 > Supabase und Firebase Cloud Messaging, „Stand"-Datum.
 >
