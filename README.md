@@ -96,7 +96,10 @@ vor dem Upload, GitHub-gehosteter Runner statt self-hosted, weil dieses Repo
 
 3. **SSL:** Im Checkdomain-Panel Let's Encrypt für `pertono.com` aktivieren,
    falls noch nicht geschehen (HTTPS ist Pflicht für die Play-Console-URL).
-   Server-seitige Dotfiles wie `.well-known` rührt der Mirror nicht an.
+   Server-seitige Dotfiles wie `.well-known` rührt der Mirror nicht an —
+   einzige Ausnahme ist die `.htaccess`: [`public/.htaccess`](public/.htaccess)
+   wird nach dem Mirror separat hochgeladen und ersetzt die alte des Hosters
+   (die `/` auf die gelöschte `/de/`-Site umleitete).
 4. Push auf `main` — oder den Workflow im Actions-Tab manuell starten.
 
 ## Danach: Google Play Console

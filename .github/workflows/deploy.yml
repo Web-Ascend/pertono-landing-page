@@ -95,6 +95,11 @@ jobs:
       # Dotfiles/-ordner werden ausgeschlossen — server-seitige wie
       # .well-known werden weder hochgeladen noch gelöscht, damit z. B.
       # SSL/Let's-Encrypt nicht zerschossen wird.
+      # Die .htaccess wird im Anschluss separat hochgeladen (einzelner put,
+      # kein delete, wie bei lets-rave): der Dotfile-Schutz bleibt für alles
+      # andere erhalten, aber unsere .htaccess ersetzt die alte des Hosters —
+      # die leitete / auf die gelöschte /de/-Site um und würde sonst jeden
+      # Deploy überleben.
       - name: SFTP Mirror Deploy
         env:
           SFTP_HOST:        ${{ secrets.SFTP_HOST }}
@@ -124,5 +129,6 @@ jobs:
           set net:timeout 20
           user "$SFTP_USER" "$SFTP_PASSWORD"
           mirror --reverse --delete --verbose --exclude "^\." ./dist/ "$REMOTE_PATH"
+          put -O "$REMOTE_PATH" ./dist/.htaccess
           bye
           EOF
