@@ -1,28 +1,28 @@
 # pertono-landing-page
 
 > [!WARNING]
-> **Vor der Veröffentlichung ausfüllen und prüfen lassen.** Die
-> Identitätsangaben auf den Rechtsseiten sind absichtlich leere Platzhalter
-> (`[ausfüllen]`) — eine plausibel aussehende falsche Adresse ist gefährlicher
-> als eine offensichtlich leere. Solange Felder offen sind oder die anwaltliche
+> **Vor der Veröffentlichung vervollständigen und prüfen lassen.** Die Angaben
+> in **`src/data/legal.ts`** sind mit den belegbaren Daten aus den anderen
+> Repos gefüllt (Impressum/Datenschutz der live lets-rave.com, pertono-Repo);
+> die restlichen Platzhalter (`[ausfüllen]`) geben die Repos nicht her und
+> dürfen nicht geraten werden. Solange Felder offen sind oder die anwaltliche
 > Prüfung aussteht, liefern alle Seiten automatisch
 > `<meta name="robots" content="noindex">` aus.
 >
-> Alle Angaben stehen zentral in **`src/data/legal.ts`**:
+> Noch offen:
 >
-> - [ ] Firmierung (`companyName`)
-> - [ ] Straße und Hausnummer (`street`)
-> - [ ] Postleitzahl und Ort (`zipCity`)
-> - [ ] Vertretungsberechtigte Person (`representative`)
-> - [ ] Telefon (`phone`) — E-Mail ist mit `support@pertono.com` vorbelegt
-> - [ ] Registergericht und Registernummer (`registerCourt`, `registerNumber`) — oder Hinweis „kein Registereintrag"
-> - [ ] USt-IdNr. (`vatId`) — oder Hinweis „keine vorhanden"
-> - [ ] Verantwortlich nach § 18 Abs. 2 MStV (`contentResponsible`)
-> - [ ] Datenschutzbeauftragte Person (`dataProtectionOfficer`) — oder „Nicht bestellt, da gesetzlich nicht erforderlich."
-> - [ ] Zuständige Aufsichtsbehörde (`supervisoryAuthority`)
-> - [ ] Auftragsverarbeiter: Hosting, Push, E-Mail-Versand (`processors`)
-> - [ ] „Stand"-Datum der Datenschutzerklärung (`lastUpdated`)
-> - [ ] **Text anwaltlich prüfen lassen**, danach `legalReviewDone = true` setzen
+> - [ ] USt-IdNr. (`vatId`) — eintragen oder Hinweis „keine vorhanden"
+> - [ ] Auftragsverarbeiter E-Mail-Versand (`processors.email`) — im Backend
+>       bisher ein Mock; laut Code-Kommentar Postmark oder Brevo geplant. Erst
+>       eintragen, wenn der Anbieter feststeht.
+> - [ ] **Text anwaltlich prüfen lassen** (dabei auch bestätigen lassen, dass
+>       kein Datenschutzbeauftragter bestellt werden muss), danach
+>       `legalReviewDone = true` setzen
+>
+> Bereits gefüllt (Quellen im Datei-Kommentar): Anbieter Jan Solga
+> (Einzelunternehmer, Münster), Telefon, Registereintrag („nicht eingetragen"),
+> § 18-MStV-Verantwortlicher, Aufsichtsbehörde LDI NRW, Auftragsverarbeiter
+> Supabase und Firebase Cloud Messaging, „Stand"-Datum.
 >
 > Das `noindex` verschwindet von selbst, sobald alle Felder gefüllt sind **und**
 > `legalReviewDone = true` ist — es gibt keinen zweiten Schalter, der vergessen
