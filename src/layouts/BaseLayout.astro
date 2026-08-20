@@ -16,12 +16,14 @@ import { noindex } from "../data/legal";
 interface Props {
   title: string;
   description: string;
+  /** Rendert den Titel ohne das "— Pertono"-Suffix (für die Startseite). */
+  noSuffix?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noSuffix = false } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const fullTitle = `${title} — Pertono`;
+const fullTitle = noSuffix ? title : `${title} — Pertono`;
 ---
 
 <!doctype html>

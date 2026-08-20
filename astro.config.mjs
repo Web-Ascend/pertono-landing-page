@@ -2,16 +2,17 @@
 import { defineConfig } from "astro/config";
 
 /**
- * Die Rechts-Site von Pertono: Datenschutzerklärung und Impressum unter
- * stabilen URLs, damit https://legal.pertono.com/datenschutz/ als
- * Datenschutz-URL in der Google Play Console eingetragen werden kann.
+ * Die Landing Page von Pertono: zeigt die unterstützten Plattformen (Android,
+ * Web, künftig iOS) und hostet Datenschutzerklärung und Impressum unter
+ * stabilen URLs — https://pertono.com/datenschutz/ ist die Datenschutz-URL
+ * für die Google Play Console.
  *
  * `site` muss der echte Origin sein — die Canonical-URLs werden daraus
  * gebaut. Gehostet wird bei Checkdomain (siehe .github/workflows/deploy.yml),
  * deshalb ist `base` schlicht `/`.
  */
 export default defineConfig({
-  site: "https://legal.pertono.com",
+  site: "https://pertono.com",
   base: "/",
   build: {
     // Directory-URLs: /datenschutz/ statt /datenschutz.html.
