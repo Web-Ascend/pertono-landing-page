@@ -1,0 +1,11 @@
+# Build output
+dist/
+# Astro generated types
+.astro/
+# Dependencies
+node_modules/
+# Environment
+.env
+.env.*
+# OS/editor noise
+.DS_Store

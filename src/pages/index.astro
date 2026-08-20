@@ -1,0 +1,69 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { hasOpenTodos } from "../data/legal";
+---
+
+<BaseLayout
+  title="Rechtliches"
+  description="Datenschutzerklärung und Impressum von Pertono, der Vereinsverwaltung fürs Handy."
+>
+  <h1>Rechtliches</h1>
+
+  <p>
+    Auf diesen Seiten stehen die rechtlichen Informationen zu Pertono — der
+    Vereinsverwaltung fürs Handy. Sie gelten für die Pertono-App und die
+    zugehörigen Dienste.
+  </p>
+
+  <ul class="doc-list">
+    <li>
+      <a href="/datenschutz/">Datenschutzerklärung</a>
+      <p>
+        Welche Daten Pertono verarbeitet, auf welcher Rechtsgrundlage, wo sie
+        gespeichert werden und welche Rechte betroffene Personen haben.
+      </p>
+    </li>
+    <li>
+      <a href="/impressum/">Impressum</a>
+      <p>Anbieterkennzeichnung nach § 5 DDG.</p>
+    </li>
+  </ul>
+
+  {
+    hasOpenTodos && (
+      <p class="notice" role="note">
+        <strong>Entwurf.</strong> Die Anbieterangaben auf diesen Seiten sind noch
+        nicht vollständig; die Seiten sind deshalb von der Indexierung durch
+        Suchmaschinen ausgenommen.
+      </p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .doc-list {
+    list-style: none;
+    margin: 2rem 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .doc-list li {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+    padding: 1rem 1.25rem;
+  }
+
+  .doc-list a {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .doc-list p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+  }
+</style>
