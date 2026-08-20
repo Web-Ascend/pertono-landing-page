@@ -1,0 +1,19 @@
+# Ersetzt die alte Hoster-.htaccess auf dem Webspace, die / auf die
+# inzwischen gelöschte /de/-Site umleitete. Der Mirror im Deploy schließt
+# Dotfiles bewusst aus (Schutz für server-seitige Dateien wie .well-known),
+# deshalb wird diese Datei im Anschluss separat per put hochgeladen — sonst
+# würde die alte Weiterleitung jeden Deploy überleben.
+
+AddDefaultCharset UTF-8
+
+# Die Sprachpfade der Vorgänger-Site führen ins Leere — alte Links und
+# gecachte 301s landen auf der Startseite statt auf einem 404.
+RedirectMatch 301 ^/(de|en)(/.*)?$ /
+
+# Fonts und gehashte Assets ändern sich unter derselben URL nie.
+<IfModule mod_expires.c>
+  ExpiresActive on
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 week"
+</IfModule>
