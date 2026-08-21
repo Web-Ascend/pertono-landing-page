@@ -68,29 +68,14 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
   <body>
     <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
 
+    <!-- Nur das Wordmark: Datenschutz und Impressum sind Pflichtlinks, keine
+         Navigation — sie stehen im Footer (und auf der Startseite als
+         eigener Abschnitt), nicht im Header. -->
     <header class="site-header">
       <div class="container header-inner">
         <a href="/" class="wordmark" aria-label="Pertono, zur Übersicht">
           <PertonoLogo d={24} />
         </a>
-        <nav aria-label="Rechtliches">
-          <ul>
-            <li>
-              <a
-                href="/datenschutz/"
-                aria-current={Astro.url.pathname === "/datenschutz/" ? "page" : undefined}
-                >Datenschutz</a
-              >
-            </li>
-            <li>
-              <a
-                href="/impressum/"
-                aria-current={Astro.url.pathname === "/impressum/" ? "page" : undefined}
-                >Impressum</a
-              >
-            </li>
-          </ul>
-        </nav>
       </div>
     </header>
 
