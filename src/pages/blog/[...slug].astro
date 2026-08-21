@@ -1,0 +1,47 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const dateFormat = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" });
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  publishedAt={post.data.publishedAt}
+  updatedAt={post.data.updatedAt}
+>
+  <article class="prose">
+    <h1>{post.data.title}</h1>
+    <p class="meta">
+      <time datetime={post.data.publishedAt.toISOString()}>
+        {dateFormat.format(post.data.publishedAt)}
+      </time>
+      {post.data.updatedAt && <>&nbsp;· aktualisiert {dateFormat.format(post.data.updatedAt)}</>}
+    </p>
+    <Content />
+  </article>
+</BaseLayout>
+
+<style>
+  .prose {
+    max-width: 42rem;
+  }
+  .prose :global(h2) {
+    margin-top: 2.5rem;
+  }
+  .prose :global(li) {
+    margin-block: 0.4rem;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+</style>

@@ -1,0 +1,203 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+/**
+ * Prices are placeholders until the plans are decided. They are written as
+ * data rather than markup so replacing them is a one-line change, and the page
+ * says plainly that they are not final — a Verein budgets a year ahead and
+ * will hold us to whatever is printed here.
+ */
+const plans = [
+  {
+    name: "Kostenlos",
+    price: "0 €",
+    period: "dauerhaft",
+    limit: "bis 50 Mitglieder",
+    features: [
+      "Mitgliederverwaltung",
+      "Termine und Zusagen",
+      "Ankündigungen per Push",
+      "Kassenbuch mit Belegfotos",
+    ],
+    highlighted: false,
+  },
+  {
+    name: "Verein",
+    price: "9 €",
+    period: "pro Monat",
+    limit: "bis 300 Mitglieder",
+    features: [
+      "Alles aus Kostenlos",
+      "Beitragsläufe und Beitragsordnung",
+      "SEPA-Lastschrift als XML-Datei",
+      "Kassenbericht für die Jahreshauptversammlung",
+      "Abteilungen und Abteilungsleitung",
+    ],
+    highlighted: true,
+  },
+  {
+    name: "Groß",
+    price: "15 €",
+    period: "pro Monat",
+    limit: "bis 800 Mitglieder",
+    features: [
+      "Alles aus Verein",
+      "Automatischer Kontoabgleich",
+      "Mahnläufe",
+    ],
+    highlighted: false,
+  },
+  {
+    name: "Unbegrenzt",
+    price: "24 €",
+    period: "pro Monat",
+    limit: "ohne Mitgliederlimit",
+    features: [
+      "Alles aus Groß",
+      "Datenexport für den Steuerberater",
+    ],
+    highlighted: false,
+  },
+];
+---
+
+<BaseLayout
+  title="Preise"
+  description="Pertono kostet für kleine Vereine nichts und für alle anderen weniger als ein Monatsbeitrag. Alle Preise pro Verein, nicht pro Nutzer, monatlich kündbar."
+>
+  <h1>Preise</h1>
+  <p class="lead">
+    Ein Preis pro Verein, nicht pro Vorstandsmitglied. Alle Preise inklusive
+    Umsatzsteuer, monatlich kündbar. Wer unter 50 Mitglieder hat, zahlt nichts —
+    die meisten Vereine in Deutschland sind genau so groß.
+  </p>
+
+  <p class="notice" role="note">
+    <strong>Noch nicht final:</strong> Pertono ist in Entwicklung. Die Tarife hier
+    zeigen die geplante Struktur, die Beträge können sich bis zum Start noch
+    ändern.
+  </p>
+
+  <ul class="plans">
+    {
+      plans.map((plan) => (
+        <li class:list={["plan", plan.highlighted && "plan--highlighted"]}>
+          <h2>{plan.name}</h2>
+          <p class="price">
+            <strong>{plan.price}</strong>
+            <span>{plan.period}</span>
+          </p>
+          <p class="limit">{plan.limit}</p>
+          <ul class="features">
+            {plan.features.map((feature) => (
+              <li>{feature}</li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ul>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq">Häufige Fragen</h2>
+
+    <h3>Zahlt der Verein oder jedes Vorstandsmitglied?</h3>
+    <p>
+      Der Verein. Wie viele Personen im Vorstand mitarbeiten, spielt für den
+      Preis keine Rolle.
+    </p>
+
+    <h3>Was passiert, wenn wir über das Mitgliederlimit wachsen?</h3>
+    <p>
+      Bestehende Daten bleiben vollständig erhalten und lesbar. Neue Mitglieder
+      lassen sich erst nach einem Tarifwechsel anlegen.
+    </p>
+
+    <h3>Nehmt ihr eine Gebühr auf eingezogene Beiträge?</h3>
+    <p>
+      Nein. Pertono erzeugt die SEPA-Datei, den Einzug macht deine Vereinsbank.
+      Das Geld fließt zwischen eurem Konto und euren Mitgliedern, es läuft nie
+      über uns.
+    </p>
+
+    <h3>Kommen wir wieder raus?</h3>
+    <p>
+      Jederzeit. Mitglieder, Buchungen und Belege lassen sich als offene Datei
+      exportieren, auch im kostenlosen Tarif.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 42rem;
+  }
+
+  .notice {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--brand);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    background: var(--surface-alt);
+    max-width: 42rem;
+  }
+
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1.25rem;
+    list-style: none;
+    padding: 0;
+    margin-block: 2.5rem;
+  }
+
+  .plan {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .plan--highlighted {
+    border-color: var(--brand);
+    border-width: 2px;
+    background: var(--surface-alt);
+  }
+
+  .plan h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-block: 0.5rem;
+  }
+
+  .price strong {
+    font-size: 2rem;
+    letter-spacing: -0.02em;
+  }
+
+  .price span,
+  .limit {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+
+  .features {
+    margin-top: 1.25rem;
+    padding-left: 1.1rem;
+  }
+
+  .features li {
+    margin-block: 0.4rem;
+  }
+
+  h3 {
+    margin-top: 1.75rem;
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("vergleich", ({ data }) => !data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const dateFormat = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" });
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  publishedAt={entry.data.publishedAt}
+>
+  <article class="prose">
+    <h1>{entry.data.title}</h1>
+    {/* A comparison page names a real company, so it has to say when the
+        claims were last verified. Without that it quietly turns into a false
+        statement about a competitor. */}
+    <p class="checked">
+      Stand der Angaben zu {entry.data.competitor}:{" "}
+      <time datetime={entry.data.checkedOn.toISOString()}>
+        {dateFormat.format(entry.data.checkedOn)}
+      </time>
+    </p>
+    <Content />
+  </article>
+</BaseLayout>
+
+<style>
+  .prose {
+    max-width: 42rem;
+  }
+  .prose :global(h2) {
+    margin-top: 2.5rem;
+  }
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .prose :global(th),
+  .prose :global(td) {
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem;
+    text-align: left;
+  }
+  .checked {
+    color: var(--muted);
+    font-size: 0.9375rem;
+    border-left: 3px solid var(--line);
+    padding-left: 0.75rem;
+  }
+</style>

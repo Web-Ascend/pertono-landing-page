@@ -1,29 +1,58 @@
 ---
 /**
- * Der Seitenrahmen der Rechts-Site.
+ * Der Seitenrahmen — für Marketing- und Rechtsseiten gemeinsam.
  *
- * Abgespeckte Fassung des BaseLayouts aus dem pertono-Repo: gleiche
- * Brand-Farben und -Schriften, aber ohne Marketing-Navigation und mit einer
- * schmalen Lesespalte — die Seiten hier sind lange Fließtexte.
+ * Zusammengeführt aus zwei Vorfahren: dem BaseLayout der Marketing-Site aus
+ * dem pertono-Repo (Navigation, Artikel-Metadaten, Sitemap, Manifest) und der
+ * hier gewachsenen abgespeckten Fassung für die Rechtsseiten (Sticky Footer,
+ * schmale Lesespalte, Entwurfs-Kasten). Seiten mit langem Fließtext setzen
+ * `narrow` und bekommen die Lesespalte; alle anderen die volle Breite.
  *
- * `noindex` kommt pro Seite: die Rechtsseiten setzen es DAUERHAFT (sie sollen
- * nie in einem Suchindex landen), die Startseite bindet es an das
- * Entwurfs-Gate aus src/data/legal.ts.
+ * Alles, was Suchmaschine und Social-Vorschau brauchen, steht hier einmal —
+ * keine Seite kann ohne Canonical-URL oder Description ausgeliefert werden.
+ *
+ * `noindex` hat zwei Quellen: Seiten wie die Rechtsseiten und die 404 setzen
+ * es DAUERHAFT per Prop; zusätzlich zieht das Entwurfs-Gate aus
+ * src/data/legal.ts JEDE Seite auf noindex, solange die Pflichtangaben
+ * unvollständig sind oder die anwaltliche Prüfung aussteht. Eine öffentliche
+ * Preisseite mit unfertigem Impressum soll genauso wenig in den Index wie die
+ * Startseite. Das Gate löst sich in legal.ts von selbst.
  */
 import PertonoLogo from "../components/PertonoLogo.astro";
+import { noindex as legalGate } from "../data/legal";
 
 interface Props {
   title: string;
   description: string;
   /** Rendert den Titel ohne das "— Pertono"-Suffix (für die Startseite). */
   noSuffix?: boolean;
+  publishedAt?: Date;
+  updatedAt?: Date;
+  /** Dauerhaftes noindex der Seite selbst (Rechtsseiten, 404). */
   noindex?: boolean;
+  /** Schmale Lesespalte für lange Fließtexte (Rechtsseiten). */
+  narrow?: boolean;
 }
 
-const { title, description, noSuffix = false, noindex = false } = Astro.props;
+const {
+  title,
+  description,
+  noSuffix = false,
+  publishedAt,
+  updatedAt,
+  noindex = false,
+  narrow = false,
+} = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const fullTitle = noSuffix ? title : `${title} — Pertono`;
+const robotsNoindex = noindex || legalGate;
+
+const nav = [
+  { href: "/", label: "Start" },
+  { href: "/preise/", label: "Preise" },
+  { href: "/blog/", label: "Ratgeber" },
+];
 ---
 
 <!doctype html>
@@ -34,21 +63,30 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, follow" />}
+    {robotsNoindex && <meta name="robots" content="noindex, follow" />}
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={publishedAt ? "article" : "website"} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content="de_DE" />
     <meta property="og:site_name" content="Pertono" />
+    <meta name="twitter:card" content="summary_large_image" />
 
+    {publishedAt && <meta property="article:published_time" content={publishedAt.toISOString()} />}
+    {updatedAt && <meta property="article:modified_time" content={updatedAt.toISOString()} />}
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#1F3A5F" />
 
-    <!-- Selbst gehostet statt von fonts.gstatic.com geladen: das Produkt
-         verspricht, dass Daten in der EU bleiben — dann soll niemand auf dem
-         Weg zur Datenschutzerklärung seine IP-Adresse an Google reichen. -->
+    <!-- Die beiden Schriften des Wordmarks. Selbst gehostet statt von
+         fonts.gstatic.com geladen: das Produkt verspricht, dass Daten in der
+         EU bleiben — dann soll niemand auf dem Weg dorthin seine IP-Adresse
+         an Google reichen. Preload, weil beide im Header jeder Seite stehen
+         und der Font-Swap sonst beim ersten Rendern sichtbar wäre. -->
     <link
       rel="preload"
       href="/fonts/space-grotesk-700-latin.woff2"
@@ -63,19 +101,35 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
       type="font/woff2"
       crossorigin
     />
+
+    <!-- Seitenspezifischer Head-Inhalt, z. B. JSON-LD. -->
+    <slot name="head" />
   </head>
 
-  <body>
+  <body class:list={[narrow && "narrow"]}>
     <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
 
-    <!-- Nur das Wordmark: Datenschutz und Impressum sind Pflichtlinks, keine
-         Navigation — sie stehen im Footer (und auf der Startseite als
-         eigener Abschnitt), nicht im Header. -->
     <header class="site-header">
       <div class="container header-inner">
-        <a href="/" class="wordmark" aria-label="Pertono, zur Übersicht">
+        <a href="/" class="wordmark" aria-label="Pertono, zur Startseite">
           <PertonoLogo d={24} />
         </a>
+        <nav aria-label="Hauptnavigation">
+          <ul>
+            {
+              nav.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={Astro.url.pathname === item.href ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
       </div>
     </header>
 
@@ -85,7 +139,7 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
 
     <footer class="site-footer">
       <div class="container">
-        <nav aria-label="Rechtliches (Fußzeile)">
+        <nav aria-label="Rechtliches">
           <ul>
             <li><a href="/impressum/">Impressum</a></li>
             <li><a href="/datenschutz/">Datenschutz</a></li>
@@ -98,9 +152,9 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
     </footer>
 
     <style is:global>
-      /* Beide Brand-Schriften, latin + latin-ext, aus dem pertono-Repo
-         übernommen. `swap`: der Header rendert im Fallback, statt gar nicht,
-         während die Datei ankommt. */
+      /* Beide Brand-Schriften, latin + latin-ext. `swap`: der Header rendert
+         im Fallback, statt gar nicht, während die Datei ankommt.
+         brand/README.md im pertono-Repo: das Wordmark ist Text, nie ein Bild. */
       @font-face {
         font-family: "Space Grotesk";
         font-style: normal;
@@ -142,10 +196,13 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
           U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
       }
 
-      /* Die vier Brand-Farben aus brand/tokens.json, dann die Rollen, in denen
-         die Site sie spielt. Nichts hier erfindet eine Farbe: die Grautöne
-         sind Mischungen aus Navy und Paper. Übernommen aus dem pertono-Repo,
-         damit beide Sites nachweislich dieselbe Palette tragen. */
+      /* Ein kleines Designsystem statt eines Frameworks: die ganze Site ist
+         eine Handvoll statischer Seiten.
+
+         Die vier Brand-Farben aus brand/tokens.json im pertono-Repo, dann die
+         Rollen, in denen die Site sie spielt. Nichts hier erfindet eine Farbe:
+         die Grautöne sind Mischungen aus Navy und Paper, ein Rahmen und eine
+         Überschrift sind nachweislich derselbe Farbton. */
       :root {
         --navy: #1f3a5f;
         --accent: #7b98b8;
@@ -156,25 +213,34 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
         --brand-dark: var(--deep-ink);
         --on-brand: var(--paper);
         --ink: var(--deep-ink);
+        /* Die Subline-Farbe aus dem Kit. #7b98b8 ist der Akzent, trägt in
+           Textgröße auf Paper aber nur etwa 3:1 — zu wenig für einen Footer. */
         --muted: #4f7396;
         --line: color-mix(in srgb, var(--navy) 16%, var(--paper));
         --surface: var(--paper);
         --surface-alt: color-mix(in srgb, var(--navy) 5%, var(--paper));
 
-        /* Konsumiert von components/PertonoLogo.astro. */
+        /* Konsumiert von components/PertonoLogo.astro, das seine Farben von
+           der Seite nimmt statt aus einem Prop. */
         --logo-front: var(--navy);
         --logo-back: var(--accent);
         --logo-word: var(--navy);
         --logo-subline: var(--muted);
 
-        /* Schmaler als auf pertono.com: hier steht nur Fließtext, und eine
-           Zeile über die volle Breite eines Monitors liest niemand. */
-        --max-width: 46rem;
+        --max-width: 68rem;
         --radius: 12px;
+      }
+
+      /* Die schmale Lesespalte für lange Fließtexte (Rechtsseiten): eine
+         Zeile über die volle Breite eines Monitors liest niemand. */
+      body.narrow {
+        --max-width: 46rem;
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
+          /* Navy ist im Hellen der vordere Ring; auf Ink verschwindet es,
+             also trägt der Akzent Links und Marke. */
           --brand: var(--accent);
           --brand-dark: color-mix(in srgb, var(--accent) 78%, var(--paper));
           --on-brand: var(--deep-ink);
@@ -194,6 +260,16 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
       *::before,
       *::after {
         box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
       }
 
       body {
@@ -220,6 +296,8 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
       h1,
       h2,
       h3 {
+        /* Die Brand-Schrift, im einen Gewicht, das ausgeliefert wird. Kostet
+           nichts extra: der Header hat sie auf jeder Seite schon geladen. */
         font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto,
           sans-serif;
         font-weight: 700;
@@ -228,16 +306,22 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
       }
 
       h1 {
-        font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+        font-size: clamp(2rem, 1.5rem + 2.2vw, 3rem);
         letter-spacing: -0.02em;
       }
 
-      h2 {
+      /* In der Lesespalte kleinere Überschriften: dort steht Fließtext, keine
+         Marketing-Sektionen. */
+      body.narrow h1 {
+        font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+      }
+
+      body.narrow h2 {
         margin-top: 2rem;
         font-size: 1.125rem;
       }
 
-      h3 {
+      body.narrow h3 {
         margin-top: 1.25rem;
         font-size: 1rem;
       }
@@ -255,8 +339,9 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
         padding: 0.1em 0.35em;
       }
 
-      /* Der rote Entwurfs-Kasten, den beide Rechtsseiten zeigen, solange
-         Pflichtangaben fehlen. Zentral, damit er überall gleich aussieht. */
+      /* Der rote Entwurfs-Kasten, den Startseite und Rechtsseiten zeigen,
+         solange Pflichtangaben fehlen. Zentral, damit er überall gleich
+         aussieht. */
       .notice {
         border: 1px solid var(--line);
         border-left: 4px solid #b3261e;
@@ -305,6 +390,9 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
         flex-wrap: wrap;
       }
 
+      /* Das Lockup zeichnet sich selbst; das hier ist nur der Link darum. Das
+         Padding ist der 0.5 * D Schutzraum, der der Marke zusteht — und gibt
+         dem Link nebenbei ein Tap-Ziel, das größer ist als die Marke allein. */
       .wordmark {
         display: inline-flex;
         text-decoration: none;
@@ -349,6 +437,29 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
 
       .footer-note {
         margin-block: 0.75rem 0;
+      }
+
+      .button {
+        display: inline-block;
+        background: var(--brand);
+        color: var(--on-brand);
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.85rem 1.5rem;
+        border-radius: var(--radius);
+        /* Deutlich über dem 44-px-Minimum: das hier wird am Handy genauso
+           oft getippt wie am Rechner geklickt. */
+        min-height: 48px;
+      }
+
+      .button:hover {
+        background: var(--brand-dark);
+      }
+
+      .button--ghost {
+        background: transparent;
+        color: var(--brand);
+        border: 1px solid var(--line);
       }
     </style>
   </body>

@@ -9,7 +9,8 @@
 > `/impressum/`) tragen **dauerhaft** `<meta name="robots" content="noindex">`
 > — sie sollen nie in einem Suchindex landen; die Play Console braucht nur
 > Erreichbarkeit, keine Indexierung. Solange Felder offen sind oder die
-> anwaltliche Prüfung aussteht, trägt zusätzlich auch die Startseite `noindex`.
+> anwaltliche Prüfung aussteht, trägt zusätzlich **jede** Seite der Site
+> `noindex` — auch Preise und Ratgeber.
 >
 > Noch offen:
 >
@@ -24,29 +25,43 @@
 > Supabase, Firebase Cloud Messaging und Brevo (E-Mail-Versand über
 > `send.pertono.com`), „Stand"-Datum.
 >
-> Das `noindex` der **Startseite** verschwindet von selbst, sobald alle Felder
-> gefüllt sind **und** `legalReviewDone = true` ist — es gibt keinen zweiten
-> Schalter, der vergessen werden kann. Die Rechtsseiten bleiben immer `noindex`.
+> Das `noindex` verschwindet von selbst, sobald alle Felder gefüllt sind
+> **und** `legalReviewDone = true` ist — es gibt keinen zweiten Schalter, der
+> vergessen werden kann. Die Rechtsseiten bleiben immer `noindex`.
 
-Die Landing Page von [Pertono](https://pertono.com) — Vereinsverwaltung fürs
-Handy. Statisch (Astro), zeigt die unterstützten Plattformen (Android, Web,
-künftig iOS) und hostet Datenschutzerklärung und Impressum unter stabilen URLs.
+Die Website von [Pertono](https://pertono.com) — Vereinsverwaltung fürs Handy.
+Statisch (Astro): Startseite mit den unterstützten Plattformen (Android, Web,
+künftig iOS), Preise, Ratgeber und Vergleichsseiten, dazu Datenschutzerklärung
+und Impressum unter stabilen URLs.
 
 **Datenschutz-URL für die Google Play Console:** `https://pertono.com/datenschutz/`
 
-Rechtstexte, Brand-Farben und die self-hosted Fonts (keine Google-Fonts-Requests
-— Pertono verspricht EU-Datenhaltung) sind aus dem `pertono`-Repo übernommen.
-Die vollständige Marketing-Site (Blog, Preise, Vergleichsseiten) liegt weiterhin
-in `pertono/website` und ist nicht deployt — dieses Repo ist die schlanke Seite,
-die unter `pertono.com` live geht.
+Brand-Farben und die self-hosted Fonts (keine Google-Fonts-Requests — Pertono
+verspricht EU-Datenhaltung) sind aus dem `pertono`-Repo übernommen. Die
+Marketing-Site (Startseite, Preise, Blog, Vergleichsseiten) lebte früher als
+`pertono/website` im Monorepo und ist hierher umgezogen — dieses Repo ist die
+eine Site, die unter `pertono.com` live geht.
 
 ## Seiten
 
 | URL | Inhalt |
 | --- | --- |
-| `/` | Landing Page: Plattformen + Links auf die Rechtsseiten |
+| `/` | Startseite: Pitch, Funktionen, Plattformen |
+| `/preise/` | Tarife (bis zum Start als vorläufig gekennzeichnet) |
+| `/blog/` | Ratgeber-Artikel aus `src/content/blog/` |
+| `/vergleich/…/` | Vergleichsseiten aus `src/content/vergleich/` |
 | `/datenschutz/` | Datenschutzerklärung |
 | `/impressum/` | Impressum nach § 5 DDG |
+
+## Inhalte pflegen
+
+Ratgeber und Vergleiche sind Astro-Content-Collections mit Schema-Validierung
+(`src/content.config.ts`) — `npm run check` ist deshalb ein echter Check: eine
+zu lange Meta-Description bricht den Build. Vergleichsseiten nennen einen
+echten Wettbewerber, ihr Schema erzwingt darum `checkedOn`, das Datum der
+letzten Prüfung der Aussagen — eine veraltete Vergleichsseite ist eine falsche
+Behauptung über ein anderes Unternehmen. Beiträge mit `draft: true` erscheinen
+in keinem Build.
 
 ## Plattform-Status pflegen
 

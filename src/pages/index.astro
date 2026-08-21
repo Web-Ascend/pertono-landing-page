@@ -1,15 +1,41 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PertonoLogo from "../components/PertonoLogo.astro";
-import { hasOpenTodos, noindex } from "../data/legal";
+import { hasOpenTodos, noindex as isDraft } from "../data/legal";
 import { platforms, statusLabel } from "../data/platforms";
 
 /**
- * Die Landing Page: von hier aus erreicht man die App auf jeder unterstützten
- * Plattform — und die Rechtsseiten. Der Produkt-Pitch ist bewusst kurz; die
- * Texte sind aus pertono/website übernommen, nicht neu erfunden.
+ * Die Startseite: Produkt-Pitch, Funktionen, die unterstützten Plattformen
+ * und der Weg zu Preisen, Ratgeber und Rechtsseiten. Zusammengeführt aus der
+ * Marketing-Startseite des pertono-Repos und der bisherigen Landing Page
+ * (Plattform-Karten, Entwurfs-Hinweis).
+ *
+ * Das noindex während der Entwurfsphase setzt das BaseLayout zentral über
+ * das Gate aus src/data/legal.ts — hier steuert es nur noch den sichtbaren
+ * Hinweis-Kasten.
  */
 
+const claims = [
+  {
+    title: "Beitragslauf in unter zwei Minuten",
+    body: "Zeitraum wählen, Vorschau prüfen, SEPA-Datei herunterladen. Die Datei lädst du in dein gewohntes Online-Banking — dein Vereinskonto bleibt dein Vereinskonto.",
+  },
+  {
+    title: "Kassenbuch mit Belegfoto",
+    body: "Beleg abfotografieren, Betrag und Kategorie eintragen, fertig. Der Kassenbericht für die Jahreshauptversammlung entsteht nebenbei.",
+  },
+  {
+    title: "Mitglieder ohne Tabellen-Chaos",
+    body: "Ein- und Austritte, Abteilungen, Ermäßigungen. Was der Vorstand sieht und was der Kassenwart sieht, ist sauber getrennt.",
+  },
+  {
+    title: "Termine und Ankündigungen",
+    body: "Einladen, Zu- und Absagen sammeln, per Push erinnern. Ohne dass jemand eine weitere Gruppe beitreten muss.",
+  },
+];
+
+/** JSON-LD, damit das Produkt als Produkt erscheint, nicht als Textseite.
+    operatingSystem nennt nur, was es gibt — iOS kommt dazu, wenn es live ist. */
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
@@ -25,9 +51,15 @@ const structuredData = {
 <BaseLayout
   title="Pertono — Vereinsverwaltung, die aufs Handy passt"
   noSuffix
-  description="Mitglieder, Beiträge, SEPA-Lastschrift und Kassenbuch für deinen Verein — auf Android, im Browser und bald auf iOS. Server in der EU."
-  noindex={noindex}
+  description="Mitglieder, Beiträge, SEPA-Lastschrift und Kassenbuch für deinen Verein. Jede Kernaufgabe in unter zwei Minuten am Handy, ohne Einarbeitung. Server in der EU."
 >
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(structuredData)}
+    slot="head"
+  />
+
   <section class="hero">
     <PertonoLogo d={40} withSubline />
     <h1>Vereinsverwaltung, die aufs Handy passt</h1>
@@ -35,8 +67,26 @@ const structuredData = {
       Die meisten Vereinsprogramme sind für Büroarbeit gebaut. Vereinsarbeit
       passiert aber abends auf dem Sofa, zwischen Training und Abendessen.
       Pertono ist dafür gemacht: jede Kernaufgabe in unter zwei Minuten, ohne
-      Handbuch. Mitgliederdaten liegen auf Servern in der Europäischen Union.
+      Handbuch.
     </p>
+    <p class="cta-row">
+      <a class="button" href="/preise/">Preise ansehen</a>
+      <a class="button button--ghost" href="/blog/">Ratgeber lesen</a>
+    </p>
+  </section>
+
+  <section aria-labelledby="funktionen">
+    <h2 id="funktionen">Was Pertono kann</h2>
+    <ul class="cards">
+      {
+        claims.map((claim) => (
+          <li class="card">
+            <h3>{claim.title}</h3>
+            <p>{claim.body}</p>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 
   <section aria-labelledby="plattformen">
@@ -62,10 +112,19 @@ const structuredData = {
     </ul>
   </section>
 
-  <!-- Kein eigener "Rechtliches"-Abschnitt: Datenschutz und Impressum stehen
-       im Footer, und zweimal dieselben Links auf einer Seite sind Rauschen. -->
+  <section aria-labelledby="datenschutz" class="panel">
+    <h2 id="datenschutz">Wo eure Daten liegen</h2>
+    <p>
+      Mitgliederdaten sind personenbezogene Daten, und ein Verein haftet dafür.
+      Pertono speichert sie auf Servern in der Europäischen Union. Wer im Verein
+      was sehen darf, entscheidet nicht die App, sondern die Datenbank — ein
+      Mitglied sieht seinen eigenen Datensatz, der Vorstand die Mitgliederliste,
+      der Kassenwart die Finanzen.
+    </p>
+  </section>
+
   {
-    noindex && (
+    isDraft && (
       <p class="notice" role="note">
         <strong>Entwurf.</strong>{" "}
         {hasOpenTodos ? (
@@ -76,26 +135,53 @@ const structuredData = {
       </p>
     )
   }
-
-  <script
-    type="application/ld+json"
-    is:inline
-    set:html={JSON.stringify(structuredData)}
-  />
 </BaseLayout>
 
 <style>
   .hero {
-    margin-bottom: 1rem;
+    max-width: 46rem;
   }
 
   .hero h1 {
+    /* Der 0.5 * D Schutzraum, der der Marke bei d={40} zusteht. */
     margin-top: 1.75rem;
   }
 
   .lead {
+    font-size: 1.2rem;
+    color: var(--muted);
+  }
+
+  .cta-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 1.25rem;
+    list-style: none;
+    padding: 0;
+  }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    background: var(--surface-alt);
+  }
+
+  .card h3 {
+    margin-top: 0;
     font-size: 1.0625rem;
-    max-width: 42rem;
+  }
+
+  .card p {
+    margin-bottom: 0;
+    color: var(--muted);
   }
 
   .platforms {
@@ -154,4 +240,16 @@ const structuredData = {
     margin: 0;
   }
 
+  .panel {
+    margin-top: 3rem;
+    padding: 1.75rem;
+    border-left: 4px solid var(--brand);
+    background: var(--surface-alt);
+    border-radius: var(--radius);
+    max-width: 46rem;
+  }
+
+  .notice {
+    margin-top: 3rem;
+  }
 </style>

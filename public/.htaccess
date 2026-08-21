@@ -17,3 +17,7 @@ RedirectMatch 301 ^/(de|en)(/.*)?$ /
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType image/svg+xml "access plus 1 week"
 </IfModule>
+
+# Astro baut die 404-Seite als /404.html; ohne diese Zeile liefert Apache
+# seine eigene, nackte Fehlerseite aus.
+ErrorDocument 404 /404.html
