@@ -2,16 +2,25 @@
  * Die eine Stelle für alle Identitäts- und Pflichtangaben von Impressum und
  * Datenschutzerklärung.
  *
- * Die mit TODO markierten Felder sind ABSICHTLICH leer: eine plausibel
- * aussehende falsche Adresse ist gefährlicher als eine offensichtlich leere,
- * weil sie niemandem auffällt. Ein unvollständiges oder falsches Impressum ist
- * abmahnfähig (§ 5 DDG).
+ * Quellen der ausgefüllten Werte — nichts hier ist erfunden:
+ *  - Anbieter, Anschrift, Telefon: Impressum der live geschalteten
+ *    lets-rave.com (gleicher Inhaber, Repo lets-rave_landing-page).
+ *  - Aufsichtsbehörde (LDI NRW): Datenschutzerklärung von lets-rave.com.
+ *  - Auftragsverarbeiter Supabase/Firebase: pertono-Repo (README,
+ *    docs/architecture.md, supabase/functions/).
  *
- * Solange hier ein TODO steht oder `legalReviewDone` false ist, liefern alle
- * Seiten automatisch `<meta name="robots" content="noindex">` aus und zeigen
- * einen sichtbaren Entwurfs-Hinweis. Beides verschwindet von selbst, sobald
- * die Angaben vollständig sind UND die anwaltliche Prüfung bestätigt wurde —
- * es gibt keinen zweiten Schalter, der vergessen werden kann.
+ * Die verbliebenen TODO-Felder sind ABSICHTLICH leer, weil die Repos sie
+ * nicht hergeben — eine plausibel aussehende falsche Angabe ist gefährlicher
+ * als eine offensichtlich leere.
+ *
+ * Die Rechtsseiten (/datenschutz/, /impressum/) tragen ihr noindex DAUERHAFT
+ * und unabhängig von dieser Datei — sie sollen nie in einem Suchindex landen
+ * (die Play Console braucht nur Erreichbarkeit, keine Indexierung). Das Gate
+ * hier unten steuert nur noch die Startseite und die Entwurfs-Hinweise:
+ * solange ein TODO offen oder `legalReviewDone` false ist, bleibt auch die
+ * Startseite auf noindex. Das löst sich von selbst, sobald alles vollständig
+ * UND anwaltlich geprüft ist — es gibt keinen zweiten Schalter, der
+ * vergessen werden kann.
  */
 
 /** Sichtbarer Platzhalter, identisch zu den Quelltexten im pertono-Repo. */
@@ -19,54 +28,53 @@ export const TODO = "[ausfüllen]";
 
 /**
  * Erst auf `true` setzen, wenn der Text anwaltlich geprüft wurde.
- * Vorher bleiben alle Seiten auf noindex — unabhängig von den Feldern unten.
+ * Vorher bleibt die Startseite auf noindex — unabhängig von den Feldern unten.
  */
 export const legalReviewDone = false;
 
 /** Anbieter- und Pflichtangaben (§ 5 DDG, Art. 13 DSGVO). */
 export const provider = {
-  /** Firmierung, z. B. "Pertono GmbH" oder "Max Mustermann". */
-  companyName: TODO,
-  /** Straße und Hausnummer. */
-  street: TODO,
-  /** Postleitzahl und Ort. */
-  zipCity: TODO,
+  companyName: "Jan Solga (Einzelunternehmer)",
+  street: "Kettelerstraße 42",
+  zipCity: "48147 Münster",
   country: "Deutschland",
-  /** Vertretungsberechtigte Person(en). */
-  representative: TODO,
-  /** Kontakt-E-Mail — die einzige bereits bekannte Angabe. */
+  /** Einzelunternehmen — Inhaber und vertretungsberechtigt in einer Person. */
+  representative: "Jan Solga (Inhaber)",
   email: "support@pertono.com",
-  /** Telefonnummer. */
-  phone: TODO,
-  /** Registergericht — oder Hinweis, dass kein Registereintrag besteht. */
-  registerCourt: TODO,
-  /** Registernummer. */
-  registerNumber: TODO,
-  /** USt-IdNr. nach § 27a UStG — oder Hinweis, dass keine vorhanden ist. */
-  vatId: TODO,
+  phone: "+49 1522 6886 187",
+  /** Einzelunternehmen ohne Handelsregistereintrag (kein e.K.). */
+  registerEntry: "Als Einzelunternehmen nicht im Handelsregister eingetragen.",
+  /** Vom Inhaber bestätigt: Einzelunternehmer ohne USt-IdNr. */
+  vatId: "Keine Umsatzsteuer-Identifikationsnummer nach § 27a UStG vorhanden.",
   /** Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV. */
-  contentResponsible: TODO,
+  contentResponsible: "Jan Solga, Kettelerstraße 42, 48147 Münster",
   /**
-   * Datenschutzbeauftragte Person — oder der Hinweis:
-   * "Nicht bestellt, da gesetzlich nicht erforderlich."
+   * Einzelunternehmen, keine Beschäftigten im Sinne von Art. 37 DSGVO /
+   * § 38 BDSG — von der anwaltlichen Prüfung bestätigen lassen.
    */
-  dataProtectionOfficer: TODO,
-  /** Zuständige Aufsichtsbehörde (Landesdatenschutzbehörde), mit Anschrift/Link. */
-  supervisoryAuthority: TODO,
+  dataProtectionOfficer: "Nicht bestellt, da gesetzlich nicht erforderlich.",
+  /** Zuständig für NRW (Sitz des Anbieters: Münster). */
+  supervisoryAuthority:
+    "Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW), www.ldi.nrw.de",
 };
 
 /** Auftragsverarbeiter aus Abschnitt "Speicherort" der Datenschutzerklärung. */
 export const processors = {
-  /** Hosting-Anbieter (Server in der EU). */
-  hosting: TODO,
-  /** Anbieter für Push-Benachrichtigungen. */
-  push: TODO,
-  /** Anbieter für E-Mail-Versand. */
-  email: TODO,
+  /** Datenbank, Auth und Speicher laufen auf Supabase (siehe pertono-Repo).
+      Die Rolle ("Hosting" usw.) hängt die Datenschutz-Seite selbst an. */
+  hosting: "Supabase",
+  /** Firebase existiert im Produkt nur für Cloud Messaging auf Android. */
+  push: "Google Firebase Cloud Messaging (nur Android)",
+  /**
+   * Brevo (Brevo SAS, Paris — EU-Anbieter mit EU-Datenhaltung). Account und
+   * Versand-Subdomain send.pertono.com sind eingerichtet (DKIM/SPF/DMARC
+   * bei Checkdomain); das Backend stellt von MockEmailSender auf Brevo um.
+   */
+  email: "Brevo",
 };
 
-/** "Stand"-Datum der Datenschutzerklärung, z. B. "20. August 2026". */
-export const lastUpdated = TODO;
+/** "Stand"-Datum der Datenschutzerklärung. */
+export const lastUpdated = "21. August 2026";
 
 const allValues = [
   ...Object.values(provider),
@@ -77,5 +85,8 @@ const allValues = [
 /** True, solange mindestens ein Pflichtfeld noch den Platzhalter trägt. */
 export const hasOpenTodos = allValues.includes(TODO);
 
-/** Von den Seiten konsumiert: noindex, bis alles vollständig UND geprüft ist. */
+/**
+ * Von der STARTSEITE konsumiert: noindex, bis alles vollständig UND geprüft
+ * ist. Die Rechtsseiten setzen ihr noindex dauerhaft selbst.
+ */
 export const noindex = hasOpenTodos || !legalReviewDone;

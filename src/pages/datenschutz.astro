@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import {
   hasOpenTodos,
   lastUpdated,
+  noindex as isDraft,
   processors,
   provider,
   TODO,
@@ -22,16 +23,23 @@ import {
 <BaseLayout
   title="Datenschutzerklärung"
   description="Wie Pertono personenbezogene Daten verarbeitet: Zwecke, Rechtsgrundlagen, Speicherort in der EU und die Rechte betroffener Personen."
+  noindex
 >
   <h1>Datenschutzerklärung</h1>
 
   {
-    hasOpenTodos && (
+    isDraft && (
       <p class="notice" role="note">
         <strong>Entwurf.</strong> Der Aufbau bildet ab, was Pertono technisch
-        tatsächlich verarbeitet. Vor dem Start müssen die mit
-        <code>{TODO}</code> markierten Angaben ergänzt und der Text anwaltlich
-        geprüft werden.
+        tatsächlich verarbeitet.{" "}
+        {hasOpenTodos ? (
+          <>
+            Vor dem Start müssen die mit <code>{TODO}</code> markierten Angaben
+            ergänzt und der Text anwaltlich geprüft werden.
+          </>
+        ) : (
+          <>Die anwaltliche Prüfung des Textes steht noch aus.</>
+        )}
       </p>
     )
   }

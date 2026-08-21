@@ -1,32 +1,32 @@
 # pertono-landing-page
 
 > [!WARNING]
-> **Vor der Veröffentlichung ausfüllen und prüfen lassen.** Die
-> Identitätsangaben auf den Rechtsseiten sind absichtlich leere Platzhalter
-> (`[ausfüllen]`) — eine plausibel aussehende falsche Adresse ist gefährlicher
-> als eine offensichtlich leere. Solange Felder offen sind oder die anwaltliche
-> Prüfung aussteht, liefern alle Seiten automatisch
-> `<meta name="robots" content="noindex">` aus.
+> **Vor der Veröffentlichung vervollständigen und prüfen lassen.** Die Angaben
+> in **`src/data/legal.ts`** sind mit den belegbaren Daten aus den anderen
+> Repos gefüllt (Impressum/Datenschutz der live lets-rave.com, pertono-Repo);
+> die restlichen Platzhalter (`[ausfüllen]`) geben die Repos nicht her und
+> dürfen nicht geraten werden. Die Rechtsseiten (`/datenschutz/`,
+> `/impressum/`) tragen **dauerhaft** `<meta name="robots" content="noindex">`
+> — sie sollen nie in einem Suchindex landen; die Play Console braucht nur
+> Erreichbarkeit, keine Indexierung. Solange Felder offen sind oder die
+> anwaltliche Prüfung aussteht, trägt zusätzlich auch die Startseite `noindex`.
 >
-> Alle Angaben stehen zentral in **`src/data/legal.ts`**:
+> Noch offen:
 >
-> - [ ] Firmierung (`companyName`)
-> - [ ] Straße und Hausnummer (`street`)
-> - [ ] Postleitzahl und Ort (`zipCity`)
-> - [ ] Vertretungsberechtigte Person (`representative`)
-> - [ ] Telefon (`phone`) — E-Mail ist mit `support@pertono.com` vorbelegt
-> - [ ] Registergericht und Registernummer (`registerCourt`, `registerNumber`) — oder Hinweis „kein Registereintrag"
-> - [ ] USt-IdNr. (`vatId`) — oder Hinweis „keine vorhanden"
-> - [ ] Verantwortlich nach § 18 Abs. 2 MStV (`contentResponsible`)
-> - [ ] Datenschutzbeauftragte Person (`dataProtectionOfficer`) — oder „Nicht bestellt, da gesetzlich nicht erforderlich."
-> - [ ] Zuständige Aufsichtsbehörde (`supervisoryAuthority`)
-> - [ ] Auftragsverarbeiter: Hosting, Push, E-Mail-Versand (`processors`)
-> - [ ] „Stand"-Datum der Datenschutzerklärung (`lastUpdated`)
-> - [ ] **Text anwaltlich prüfen lassen**, danach `legalReviewDone = true` setzen
+> - [ ] **Text anwaltlich prüfen lassen** (dabei auch bestätigen lassen, dass
+>       kein Datenschutzbeauftragter bestellt werden muss), danach
+>       `legalReviewDone = true` setzen
 >
-> Das `noindex` verschwindet von selbst, sobald alle Felder gefüllt sind **und**
-> `legalReviewDone = true` ist — es gibt keinen zweiten Schalter, der vergessen
-> werden kann.
+> Alle Felder sind gefüllt (Quellen im Datei-Kommentar): Anbieter Jan Solga
+> (Einzelunternehmer, Münster), Telefon, Registereintrag („nicht eingetragen"),
+> USt-IdNr. („keine vorhanden", vom Inhaber bestätigt),
+> § 18-MStV-Verantwortlicher, Aufsichtsbehörde LDI NRW, Auftragsverarbeiter
+> Supabase, Firebase Cloud Messaging und Brevo (E-Mail-Versand über
+> `send.pertono.com`), „Stand"-Datum.
+>
+> Das `noindex` der **Startseite** verschwindet von selbst, sobald alle Felder
+> gefüllt sind **und** `legalReviewDone = true` ist — es gibt keinen zweiten
+> Schalter, der vergessen werden kann. Die Rechtsseiten bleiben immer `noindex`.
 
 Die Landing Page von [Pertono](https://pertono.com) — Vereinsverwaltung fürs
 Handy. Statisch (Astro), zeigt die unterstützten Plattformen (Android, Web,
@@ -105,6 +105,6 @@ vor dem Upload, GitHub-gehosteter Runner statt self-hosted, weil dieses Repo
 ## Danach: Google Play Console
 
 Sobald die Identitätsfelder gefüllt sind, `legalReviewDone = true` gesetzt ist
-(damit fällt das `noindex` weg) und die Seite live ist:
-`https://pertono.com/datenschutz/` als Datenschutz-URL im Play Console
-App-Content eintragen.
+und die Seite live ist: `https://pertono.com/datenschutz/` als Datenschutz-URL
+im Play Console App-Content eintragen. Das dauerhafte `noindex` der
+Rechtsseiten stört dabei nicht — die URL muss nur öffentlich erreichbar sein.

@@ -6,21 +6,21 @@
  * Brand-Farben und -Schriften, aber ohne Marketing-Navigation und mit einer
  * schmalen Lesespalte — die Seiten hier sind lange Fließtexte.
  *
- * `noindex` kommt nicht pro Seite, sondern zentral aus src/data/legal.ts:
- * solange dort Pflichtangaben fehlen oder die anwaltliche Prüfung aussteht,
- * trägt jede Seite automatisch die Robots-Sperre.
+ * `noindex` kommt pro Seite: die Rechtsseiten setzen es DAUERHAFT (sie sollen
+ * nie in einem Suchindex landen), die Startseite bindet es an das
+ * Entwurfs-Gate aus src/data/legal.ts.
  */
 import PertonoLogo from "../components/PertonoLogo.astro";
-import { noindex } from "../data/legal";
 
 interface Props {
   title: string;
   description: string;
   /** Rendert den Titel ohne das "— Pertono"-Suffix (für die Startseite). */
   noSuffix?: boolean;
+  noindex?: boolean;
 }
 
-const { title, description, noSuffix = false } = Astro.props;
+const { title, description, noSuffix = false, noindex = false } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const fullTitle = noSuffix ? title : `${title} — Pertono`;
