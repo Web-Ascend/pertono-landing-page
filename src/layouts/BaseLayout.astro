@@ -203,6 +203,13 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
         font: 400 clamp(1rem, 0.96rem + 0.2vw, 1.0625rem) / 1.65 system-ui, -apple-system,
           "Segoe UI", Roboto, sans-serif;
         -webkit-font-smoothing: antialiased;
+        /* Sticky Footer: die Seite füllt mindestens den Viewport, main dehnt
+           sich — so klebt der Footer auf kurzen Seiten am unteren Rand statt
+           in der Luft zu hängen, und lange Seiten scrollen unverändert. */
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
       }
 
       .container {
@@ -328,6 +335,7 @@ const fullTitle = noSuffix ? title : `${title} — Pertono`;
 
       main {
         padding-block: clamp(2rem, 1rem + 4vw, 4rem);
+        flex: 1;
       }
 
       .site-footer {
