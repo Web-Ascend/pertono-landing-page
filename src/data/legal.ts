@@ -66,15 +66,15 @@ export const processors = {
   /** Firebase existiert im Produkt nur für Cloud Messaging auf Android. */
   push: "Google Firebase Cloud Messaging (nur Android)",
   /**
-   * Noch nicht festgelegt: der E-Mail-Versand ist im Backend bisher ein Mock;
-   * laut Code-Kommentar ist Postmark oder Brevo geplant, sobald die Domain
-   * verifiziert ist. Erst eintragen, wenn der Anbieter wirklich feststeht.
+   * Brevo (Brevo SAS, Paris — EU-Anbieter mit EU-Datenhaltung). Account und
+   * Versand-Subdomain send.pertono.com sind eingerichtet (DKIM/SPF/DMARC
+   * bei Checkdomain); das Backend stellt von MockEmailSender auf Brevo um.
    */
-  email: TODO,
+  email: "Brevo",
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "20. August 2026";
+export const lastUpdated = "21. August 2026";
 
 const allValues = [
   ...Object.values(provider),

@@ -80,11 +80,14 @@ const structuredData = {
   </section>
 
   {
-    hasOpenTodos && (
+    noindex && (
       <p class="notice" role="note">
-        <strong>Entwurf.</strong> Die Anbieterangaben auf den Rechtsseiten sind
-        noch nicht vollständig; die Seiten sind deshalb von der Indexierung
-        durch Suchmaschinen ausgenommen.
+        <strong>Entwurf.</strong>{" "}
+        {hasOpenTodos ? (
+          <>Die Anbieterangaben auf den Rechtsseiten sind noch nicht vollständig.</>
+        ) : (
+          <>Die anwaltliche Prüfung der Rechtsseiten steht noch aus.</>
+        )}
       </p>
     )
   }

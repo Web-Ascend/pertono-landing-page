@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { hasOpenTodos, provider, TODO } from "../data/legal";
+import { hasOpenTodos, noindex as isDraft, provider, TODO } from "../data/legal";
 
 /**
  * Inhaltlich übernommen aus pertono/website/src/pages/impressum.astro.
@@ -21,11 +21,20 @@ import { hasOpenTodos, provider, TODO } from "../data/legal";
   <h1>Impressum</h1>
 
   {
-    hasOpenTodos && (
+    isDraft && (
       <p class="notice" role="note">
-        <strong>Diese Seite ist noch nicht vollständig.</strong> Vor dem
-        öffentlichen Start müssen alle mit <code>{TODO}</code> markierten
-        Angaben in <code>src/data/legal.ts</code> ergänzt werden.
+        {hasOpenTodos ? (
+          <>
+            <strong>Diese Seite ist noch nicht vollständig.</strong> Vor dem
+            öffentlichen Start müssen alle mit <code>{TODO}</code> markierten
+            Angaben in <code>src/data/legal.ts</code> ergänzt werden.
+          </>
+        ) : (
+          <>
+            <strong>Entwurf.</strong> Die Angaben sind vollständig; die
+            anwaltliche Prüfung steht noch aus.
+          </>
+        )}
       </p>
     )
   }

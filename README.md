@@ -13,18 +13,16 @@
 >
 > Noch offen:
 >
-> - [ ] Auftragsverarbeiter E-Mail-Versand (`processors.email`) — im Backend
->       bisher ein Mock; laut Code-Kommentar Postmark oder Brevo geplant. Erst
->       eintragen, wenn der Anbieter feststeht.
 > - [ ] **Text anwaltlich prüfen lassen** (dabei auch bestätigen lassen, dass
 >       kein Datenschutzbeauftragter bestellt werden muss), danach
 >       `legalReviewDone = true` setzen
 >
-> Bereits gefüllt (Quellen im Datei-Kommentar): Anbieter Jan Solga
+> Alle Felder sind gefüllt (Quellen im Datei-Kommentar): Anbieter Jan Solga
 > (Einzelunternehmer, Münster), Telefon, Registereintrag („nicht eingetragen"),
 > USt-IdNr. („keine vorhanden", vom Inhaber bestätigt),
 > § 18-MStV-Verantwortlicher, Aufsichtsbehörde LDI NRW, Auftragsverarbeiter
-> Supabase und Firebase Cloud Messaging, „Stand"-Datum.
+> Supabase, Firebase Cloud Messaging und Brevo (E-Mail-Versand über
+> `send.pertono.com`), „Stand"-Datum.
 >
 > Das `noindex` der **Startseite** verschwindet von selbst, sobald alle Felder
 > gefüllt sind **und** `legalReviewDone = true` ist — es gibt keinen zweiten
