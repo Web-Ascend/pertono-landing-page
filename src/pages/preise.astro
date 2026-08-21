@@ -6,12 +6,25 @@ import BaseLayout from "../layouts/BaseLayout.astro";
  * data rather than markup so replacing them is a one-line change, and the page
  * says plainly that they are not final — a Verein budgets a year ahead and
  * will hold us to whatever is printed here.
+ *
+ * Two decisions are encoded in this shape:
+ *
+ * `perMonth` is what a Verein compares against other tools, `perYear` is what
+ * it actually pays — one invoice, because that is how a Kassenwart budgets and
+ * because a fixed transaction fee eats a noticeable share of a 12 € debit and
+ * almost nothing of a 144 € one. Both are printed so neither is a surprise.
+ *
+ * The free plan is bounded by member count *and* by feature: collecting dues
+ * is what the paid plans are for. That is deliberate — the Verein that wants
+ * a Beitragslauf converts on the feature, long before it grows past 50
+ * members — and the FAQ below says so rather than letting somebody find out
+ * after importing their members.
  */
 const plans = [
   {
     name: "Kostenlos",
-    price: "0 €",
-    period: "dauerhaft",
+    perMonth: 0,
+    perYear: 0,
     limit: "bis 50 Mitglieder",
     features: [
       "Mitgliederverwaltung",
@@ -23,8 +36,8 @@ const plans = [
   },
   {
     name: "Verein",
-    price: "9 €",
-    period: "pro Monat",
+    perMonth: 12,
+    perYear: 144,
     limit: "bis 300 Mitglieder",
     features: [
       "Alles aus Kostenlos",
@@ -37,25 +50,18 @@ const plans = [
   },
   {
     name: "Groß",
-    price: "15 €",
-    period: "pro Monat",
+    perMonth: 19,
+    perYear: 228,
     limit: "bis 800 Mitglieder",
-    features: [
-      "Alles aus Verein",
-      "Automatischer Kontoabgleich",
-      "Mahnläufe",
-    ],
+    features: ["Alles aus Verein", "Automatischer Kontoabgleich", "Mahnläufe"],
     highlighted: false,
   },
   {
     name: "Unbegrenzt",
-    price: "24 €",
-    period: "pro Monat",
+    perMonth: 29,
+    perYear: 348,
     limit: "ohne Mitgliederlimit",
-    features: [
-      "Alles aus Groß",
-      "Datenexport für den Steuerberater",
-    ],
+    features: ["Alles aus Groß", "Datenexport für den Steuerberater"],
     highlighted: false,
   },
 ];
@@ -63,13 +69,13 @@ const plans = [
 
 <BaseLayout
   title="Preise"
-  description="Pertono kostet für kleine Vereine nichts und für alle anderen weniger als ein Monatsbeitrag. Alle Preise pro Verein, nicht pro Nutzer, monatlich kündbar."
+  description="Pertono kostet kleine Vereine nichts und alle anderen weniger als ein Mitgliedsbeitrag. Ein Preis pro Verein, eine Rechnung im Jahr, jederzeit kündbar."
 >
   <h1>Preise</h1>
   <p class="lead">
     Ein Preis pro Verein, nicht pro Vorstandsmitglied. Alle Preise inklusive
-    Umsatzsteuer, monatlich kündbar. Wer unter 50 Mitglieder hat, zahlt nichts —
-    die meisten Vereine in Deutschland sind genau so groß.
+    Umsatzsteuer, abgerechnet einmal im Jahr per Rechnung, jederzeit kündbar.
+    Wer unter 50 Mitglieder hat und keine Beiträge einzieht, zahlt nichts.
   </p>
 
   <p class="notice" role="note">
@@ -84,8 +90,13 @@ const plans = [
         <li class:list={["plan", plan.highlighted && "plan--highlighted"]}>
           <h2>{plan.name}</h2>
           <p class="price">
-            <strong>{plan.price}</strong>
-            <span>{plan.period}</span>
+            <strong>{plan.perMonth} €</strong>
+            <span>{plan.perMonth === 0 ? "dauerhaft" : "pro Monat"}</span>
+          </p>
+          <p class="billing">
+            {plan.perMonth === 0
+              ? "keine Rechnung, keine Zahlungsdaten"
+              : `${plan.perYear} € im Jahr, eine Rechnung`}
           </p>
           <p class="limit">{plan.limit}</p>
           <ul class="features">
@@ -107,6 +118,24 @@ const plans = [
       Preis keine Rolle.
     </p>
 
+    <h3>Wie wird abgerechnet?</h3>
+    <p>
+      Einmal im Jahr, per Rechnung auf den Verein. Das passt zu einem Haushalt,
+      der auf der Jahreshauptversammlung beschlossen wird: eine Position, ein
+      Beleg für die Kassenprüfung, keine zwölf Kleinbeträge im Kassenbuch. Wer
+      lieber monatlich zahlt, kann das per SEPA-Lastschrift tun — zum selben
+      Monatspreis.
+    </p>
+
+    <h3>Wir haben nur 30 Mitglieder und wollen Beiträge einziehen — reicht der kostenlose Tarif?</h3>
+    <p>
+      Nein. Der kostenlose Tarif ist für Mitgliederverwaltung, Termine und
+      Kassenbuch vollständig — Beitragsläufe und SEPA-Lastschrift gehören zum
+      Tarif „Verein“, unabhängig von der Mitgliederzahl. Wer Beiträge über
+      Pertono einzieht, ist im Tarif „Verein“, auch mit 30 Mitgliedern. Wer
+      seine Beiträge weiter selbst überweisen lässt, bleibt kostenlos.
+    </p>
+
     <h3>Was passiert, wenn wir über das Mitgliederlimit wachsen?</h3>
     <p>
       Bestehende Daten bleiben vollständig erhalten und lesbar. Neue Mitglieder
@@ -122,8 +151,9 @@ const plans = [
 
     <h3>Kommen wir wieder raus?</h3>
     <p>
-      Jederzeit. Mitglieder, Buchungen und Belege lassen sich als offene Datei
-      exportieren, auch im kostenlosen Tarif.
+      Jederzeit. Eine bezahlte Jahresrechnung erstatten wir anteilig für die
+      Monate, die ihr nicht mehr nutzt. Mitglieder, Buchungen und Belege lassen
+      sich als offene Datei exportieren, auch im kostenlosen Tarif.
     </p>
   </section>
 </BaseLayout>
@@ -174,12 +204,20 @@ const plans = [
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
-    margin-block: 0.5rem;
+    margin-block: 0.5rem 0.25rem;
   }
 
   .price strong {
     font-size: 2rem;
     letter-spacing: -0.02em;
+  }
+
+  /* Was tatsächlich abgerechnet wird, direkt unter dem Vergleichspreis —
+     nicht im Kleingedruckten, weil genau das die Überraschung wäre. */
+  .billing {
+    margin-block: 0 0.5rem;
+    font-size: 0.9375rem;
+    color: var(--brand);
   }
 
   .price span,
