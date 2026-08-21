@@ -16,11 +16,12 @@
  * Die Rechtsseiten (/datenschutz/, /impressum/) tragen ihr noindex DAUERHAFT
  * und unabhängig von dieser Datei — sie sollen nie in einem Suchindex landen
  * (die Play Console braucht nur Erreichbarkeit, keine Indexierung). Das Gate
- * hier unten steuert nur noch die Startseite und die Entwurfs-Hinweise:
- * solange ein TODO offen oder `legalReviewDone` false ist, bleibt auch die
- * Startseite auf noindex. Das löst sich von selbst, sobald alles vollständig
- * UND anwaltlich geprüft ist — es gibt keinen zweiten Schalter, der
- * vergessen werden kann.
+ * hier unten konsumiert das BaseLayout für JEDE Seite der Site — Startseite,
+ * Preise, Ratgeber, Vergleiche: solange ein TODO offen oder `legalReviewDone`
+ * false ist, bleibt alles auf noindex (eine öffentliche Preisseite mit
+ * unfertigem Impressum gehört genauso wenig in den Index wie die Startseite).
+ * Das löst sich von selbst, sobald alles vollständig UND anwaltlich geprüft
+ * ist — es gibt keinen zweiten Schalter, der vergessen werden kann.
  */
 
 /** Sichtbarer Platzhalter, identisch zu den Quelltexten im pertono-Repo. */
@@ -86,7 +87,8 @@ const allValues = [
 export const hasOpenTodos = allValues.includes(TODO);
 
 /**
- * Von der STARTSEITE konsumiert: noindex, bis alles vollständig UND geprüft
- * ist. Die Rechtsseiten setzen ihr noindex dauerhaft selbst.
+ * Vom BASELAYOUT für jede Seite konsumiert: noindex, bis alles vollständig
+ * UND geprüft ist. Die Rechtsseiten und die 404 setzen ihr dauerhaftes
+ * noindex zusätzlich selbst.
  */
 export const noindex = hasOpenTodos || !legalReviewDone;

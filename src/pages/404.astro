@@ -1,0 +1,65 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PertonoLogo from "../components/PertonoLogo.astro";
+
+/**
+ * The not-found page.
+ *
+ * Worth having as a real page rather than the host's default: most arrivals
+ * here come from a search result pointing at an article that moved, and the
+ * default page is where they leave. The lockup with its subline says what the
+ * product is to somebody who has never seen it, and the links below offer the
+ * two things they were most likely looking for.
+ *
+ * noindex, because a 404 that gets indexed competes with the page it replaced.
+ */
+---
+
+<BaseLayout
+  title="Seite nicht gefunden"
+  description="Diese Seite gibt es nicht (mehr). Hier geht es zurück zu Pertono."
+  noindex
+>
+  <div class="not-found">
+    <PertonoLogo d={32} withSubline />
+
+    <h1>Diese Seite gibt es nicht</h1>
+    <p>
+      Der Link ist vielleicht veraltet, oder er hat sich beim Tippen vertan. Von
+      hier aus kommst du weiter:
+    </p>
+
+    <ul class="links">
+      <li><a href="/">Zur Startseite</a></li>
+      <li><a href="/preise/">Preise</a></li>
+      <li><a href="/blog/">Ratgeber für Vereine</a></li>
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found {
+    max-width: 42rem;
+  }
+
+  .not-found h1 {
+    /* The 0.5 * D clear space the mark is owed, at the d={32} above. */
+    margin-top: 2.5rem;
+  }
+
+  .links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .links a {
+    /* Comfortably tappable, for the phone this site is mostly read on. */
+    display: inline-block;
+    min-height: 48px;
+    padding-block: 0.75rem;
+  }
+</style>

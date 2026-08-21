@@ -1,5 +1,5 @@
 {
-  "name": "pertono-legal",
+  "name": "pertono-landing-page",
   "type": "module",
   "private": true,
   "version": "0.1.0",
@@ -10,6 +10,7 @@
     "check": "astro check"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.2.2"
   },
   "devDependencies": {
