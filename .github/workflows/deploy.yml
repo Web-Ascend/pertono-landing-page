@@ -100,6 +100,13 @@ jobs:
       # andere erhalten, aber unsere .htaccess ersetzt die alte des Hosters —
       # die leitete / auf die gelöschte /de/-Site um und würde sonst jeden
       # Deploy überleben.
+      #
+      # assetlinks.json und die apple-app-site-association liegen in
+      # .well-known/ — auch ein Dotordner, den der Mirror ausschließt. Sie
+      # brauchen dieselbe Extrabehandlung wie die .htaccess: mkdir -f (falls der
+      # Ordner noch nicht existiert) und je ein put. Ohne sie ist der Deploy
+      # grün und der App-Deeplink tot. Der Schritt danach prüft, dass sie
+      # tatsächlich erreichbar sind.
       - name: SFTP Mirror Deploy
         env:
           SFTP_HOST:        ${{ secrets.SFTP_HOST }}
@@ -130,5 +137,61 @@ jobs:
           user "$SFTP_USER" "$SFTP_PASSWORD"
           mirror --reverse --delete --verbose --exclude "^\." ./dist/ "$REMOTE_PATH"
           put -O "$REMOTE_PATH" ./dist/.htaccess
+          mkdir -f "$REMOTE_PATH/.well-known"
+          put -O "$REMOTE_PATH/.well-known" ./dist/.well-known/assetlinks.json
+          put -O "$REMOTE_PATH/.well-known" ./dist/.well-known/apple-app-site-association
           bye
           EOF
+
+      # ── Deeplink-Endpunkte gegen die Live-Site prüfen ──
+      # Ein Deeplink, der lautlos aufhört zu funktionieren, gehört in dieselbe
+      # Kategorie wie eine stille Regression: hier zugesichert statt geglaubt.
+      # Geprüft wird die Infrastruktur — erreichbar, richtiger Content-Type,
+      # gültiges JSON, und dass der Redirect den Code trägt. Der Fingerprint
+      # bzw. die Team ID selbst sind ohne Gerät nicht prüfbar; steht dort noch
+      # ein Platzhalter, warnt der Schritt, bricht aber nicht ab (die App-Bindung
+      # scheitert dann bewusst geschlossen — der Link öffnet im Browser).
+      - name: Deeplink-Endpunkte prüfen
+        run: |
+          set -uo pipefail
+          base="https://pertono.com"
+          fail=0
+          err() { echo "::error::$1"; fail=1; }
+          warn() { echo "::warning::$1"; }
+
+          status_of() { curl -sS -o "$2" -D /tmp/h -w '%{http_code}' "$1"; }
+          ct_of() { tr -d '\r' < /tmp/h | awk -F': ' 'tolower($1)=="content-type"{print tolower($2)}'; }
+
+          # assetlinks.json (Android): 200, application/json, gültiges JSON, Paket.
+          code="$(status_of "$base/.well-known/assetlinks.json" /tmp/al.json)"
+          ct="$(ct_of)"
+          [ "$code" = "200" ] || err "assetlinks.json: HTTP $code statt 200 — kam der put an?"
+          case "$ct" in *application/json*) ;; *) err "assetlinks.json: Content-Type '$ct' ist nicht application/json";; esac
+          jq -e '.[0].target.package_name == "com.webascend.pertono"' /tmp/al.json >/dev/null 2>&1 \
+            || err "assetlinks.json: package_name fehlt/falsch oder kein gültiges JSON"
+          grep -q REPLACE_WITH_PLAY_APP_SIGNING /tmp/al.json 2>/dev/null \
+            && warn "assetlinks.json trägt noch den Platzhalter — App Links verifizieren erst mit dem echten SHA-256 des Play-App-Signing-Zertifikats."
+
+          # apple-app-site-association (iOS): 200, application/json (per ForceType), JSON.
+          code="$(status_of "$base/.well-known/apple-app-site-association" /tmp/aasa.json)"
+          ct="$(ct_of)"
+          [ "$code" = "200" ] || err "apple-app-site-association: HTTP $code statt 200"
+          # Nur eine Warnung, kein Abbruch: iOS ist noch dormant, und ob
+          # ForceType auf dem Shared Hosting greift, ist ungewiss — ein falscher
+          # Content-Type für einen ruhenden Pfad soll den aktiven Deploy nicht
+          # rot machen. Steht iOS an, muss das grün sein.
+          case "$ct" in *application/json*) ;; *) warn "apple-app-site-association: Content-Type '$ct' ist nicht application/json — ForceType greift auf diesem Host nicht; vor dem iOS-Start lösen.";; esac
+          jq -e '.applinks.details[0].paths | index("/einladung/*")' /tmp/aasa.json >/dev/null 2>&1 \
+            || err "apple-app-site-association: /einladung/* fehlt oder kein gültiges JSON"
+          grep -q REPLACE_WITH_APPLE_TEAM_ID /tmp/aasa.json 2>/dev/null \
+            && warn "apple-app-site-association trägt noch den Platzhalter — Universal Links greifen erst mit der echten Apple Team ID."
+
+          # Redirect (Fall ohne App): 302 auf die Web-App, Code als Query.
+          code="$(status_of "$base/einladung/TESTCODE-1234" /dev/null)"
+          loc="$(tr -d '\r' < /tmp/h | awk -F': ' 'tolower($1)=="location"{print $2}')"
+          [ "$code" = "302" ] || err "Einladungs-Redirect: HTTP $code statt 302"
+          [ "$loc" = "https://app.pertono.com/?invite=TESTCODE-1234" ] \
+            || err "Einladungs-Redirect zeigt auf '$loc' statt auf die Web-App mit dem Code"
+
+          [ "$fail" = "0" ] || { echo "Deeplink-Prüfung fehlgeschlagen."; exit 1; }
+          echo "Deeplink-Endpunkte OK."

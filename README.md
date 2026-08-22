@@ -117,6 +117,39 @@ vor dem Upload, GitHub-gehosteter Runner statt self-hosted, weil dieses Repo
    (die `/` auf die gelöschte `/de/`-Site umleitete).
 4. Push auf `main` — oder den Workflow im Actions-Tab manuell starten.
 
+## App-Deeplinks (Einladungslinks)
+
+Die Einladungsmail der App verlinkt auf `https://pertono.com/einladung/<Code>`.
+Dieser Pfad gehört der App, nicht der Landing Page:
+
+- **App installiert:** Android (und später iOS) fängt den Link auf
+  Betriebssystem-Ebene ab und öffnet die App direkt — der Server wird nie
+  erreicht. Das setzt die Domain-Verifizierung über die beiden Dateien in
+  [`public/.well-known/`](public/.well-known/) voraus.
+- **Keine App:** eine `RewriteRule` in [`public/.htaccess`](public/.htaccess)
+  leitet mit `302` auf `https://app.pertono.com/?invite=<Code>` weiter (Code als
+  Query, weil ein `#`-Fragment einen Redirect nicht zuverlässig überlebt); die
+  Web-App löst den Code dort ein.
+
+Beide `.well-known`-Dateien sind — wie die `.htaccess` — Dotfiles, die der
+Mirror ausschließt. Der Deploy lädt sie per separatem `put` hoch und **prüft im
+Anschluss per `curl` gegen die Live-Site**, dass sie erreichbar sind, den
+richtigen Content-Type haben und der Redirect den Code trägt. Ein grüner Deploy
+mit totem Deeplink ist damit ausgeschlossen.
+
+**Zwei Werte müssen noch eingetragen werden** (Platzhalter im Code, CI warnt
+solange sie stehen):
+
+| Datei | Platzhalter | Wert |
+| --- | --- | --- |
+| `public/.well-known/assetlinks.json` | `REPLACE_WITH_PLAY_APP_SIGNING_SHA256_FINGERPRINT` | SHA-256 des **Play-App-Signing**-Zertifikats (Play Console → *Einrichtung → App-Integrität → App-Signatur*), Format `AB:CD:…` |
+| `public/.well-known/apple-app-site-association` | `REPLACE_WITH_APPLE_TEAM_ID` | Apple **Team ID** (10 Zeichen); die AASA ist bis dahin vorbereitet, aber dormant |
+
+Bis der Fingerprint stimmt, schlägt Androids Verifizierung bewusst geschlossen
+fehl — der Link öffnet dann im Browser, was ohnehin der Fallback ist. Die
+`ForceType`-Regel für die endungslose AASA prüft der Deploy nur als Warnung, weil
+iOS noch nicht ausgeliefert wird; vor dem iOS-Start muss sie grün sein.
+
 ## Danach: Google Play Console
 
 Sobald die Identitätsfelder gefüllt sind, `legalReviewDone = true` gesetzt ist
