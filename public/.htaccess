@@ -10,6 +10,33 @@ AddDefaultCharset UTF-8
 # gecachte 301s landen auf der Startseite statt auf einem 404.
 RedirectMatch 301 ^/(de|en)(/.*)?$ /
 
+# ── App-Deeplinks ──────────────────────────────────────────────────────────
+# Einladungslinks (pertono.com/einladung/<Code>) gehören der App, nicht dieser
+# Seite. Ist die App installiert und die Domain verifiziert (assetlinks.json /
+# apple-app-site-association in /.well-known/), fängt das Betriebssystem den
+# Link ab, bevor er den Server erreicht — diese Regel greift also nur ohne App:
+# dann in die Web-App weiterleiten, den Code als Query-Parameter. Query, kein
+# #-Fragment: ein Fragment überlebt einen Redirect nicht zuverlässig, ein
+# Query-Parameter schon. 302, nicht 301: ob das Ziel App oder Browser ist, hängt
+# vom Gerät ab und darf nicht dauerhaft gecacht werden. NE hält die Bindestriche
+# im Code unverändert.
+RewriteEngine On
+RewriteRule ^einladung/([A-Za-z0-9-]+)/?$ https://app.pertono.com/?invite=$1 [R=302,L,NE]
+
+# Der Code steht in der URL; er soll nicht zusätzlich über den Referer-Header
+# irgendwohin mitwandern.
+<IfModule mod_headers.c>
+  SetEnvIf Request_URI "^/einladung/" pertono_invite=1
+  Header always set Referrer-Policy "no-referrer" env=pertono_invite
+</IfModule>
+
+# Die apple-app-site-association hat keine Dateiendung und muss trotzdem als
+# application/json ausgeliefert werden, sonst ignoriert iOS sie. assetlinks.json
+# trägt ihre Endung selbst und braucht das nicht.
+<Files "apple-app-site-association">
+  ForceType application/json
+</Files>
+
 # Fonts und gehashte Assets ändern sich unter derselben URL nie.
 <IfModule mod_expires.c>
   ExpiresActive on
