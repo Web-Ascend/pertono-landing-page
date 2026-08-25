@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import {
+  dataLocation,
   hasOpenTodos,
   lastUpdated,
   noindex as isDraft,
@@ -60,7 +61,8 @@ import {
     Verantwortlicher im Sinne der DSGVO. Für die Mitgliederdaten, die ein Verein
     in Pertono erfasst, ist der jeweilige Verein Verantwortlicher; wir verarbeiten
     sie als Auftragsverarbeiter nach Art. 28 DSGVO. Den zugehörigen
-    Auftragsverarbeitungsvertrag stellen wir jedem Verein bereit.
+    Auftragsverarbeitungsvertrag stellen wir jedem Verein bereit; die dort
+    genehmigten Unterauftragnehmer sind dieselben, die in Abschnitt 4 stehen.
   </p>
 
   <h2>3. Welche Daten wir verarbeiten</h2>
@@ -83,11 +85,55 @@ import {
     technische Entscheidung, sondern eine Anforderung der GoBD.
   </p>
 
-  <h2>4. Speicherort</h2>
+  <h2>4. Speicherort und Auftragsverarbeiter</h2>
   <p>
-    Alle Daten liegen auf Servern in der Europäischen Union. Auftragsverarbeiter:
-    {processors.hosting} (Hosting), {processors.push} (Push-Benachrichtigungen),
-    {processors.email} (E-Mail-Versand).
+    Vereins-, Mitglieder- und Buchhaltungsdaten liegen bei {processors.hosting}
+    — Datenbank, Konten, hochgeladene Belege und die Serverfunktionen, die
+    E-Mails und Benachrichtigungen auslösen. Region des Projekts:{" "}
+    {dataLocation.supabaseRegion}.
+  </p>
+  <p>
+    E-Mails — Einladungen, Beitragserinnerungen, Bestätigungs- und
+    Passwortmails — versendet {processors.email}, ein Anbieter mit Sitz in der
+    EU. Übermittelt werden Empfängeradresse, Betreff und Inhalt der jeweiligen
+    Nachricht. Diese Website und die Web-App liegen auf dem Webspace von{" "}
+    {processors.webHost}.
+  </p>
+  <p>
+    Die Web-App lädt beim Öffnen nichts von fremden Servern nach: Schriften und
+    Grafik-Engine sind mitgeliefert, und dass das so bleibt, prüft jeder Build.
+    Dienste zur Analyse, Reichweitenmessung oder Absturzberichterstattung sind
+    in keiner Fassung der App eingebunden. Womit die App überhaupt einen
+    fremden Server anspricht, sind Push-Benachrichtigungen, und die gibt es in
+    zwei technisch getrennten Varianten:
+  </p>
+
+  <h3>Push auf Android</h3>
+  <p>
+    Auf Android-Geräten stellt Firebase Cloud Messaging zu, ein Dienst von
+    Google. Nur dort: der Web-Build startet Firebase nicht, und für iPhone und
+    iPad gibt es bisher überhaupt keine Push-Zustellung. Gespeichert wird dafür
+    ein Gerätetoken zu deinem Konto. Beim Versand einer Mitteilung erhält{" "}
+    {processors.pushAndroid} dieses Token sowie Titel und Text der Mitteilung im
+    Klartext und einen Verweis auf den Verein und die Mitteilung; weitere Daten
+    deines Vereins erreichen Google nicht. Google verarbeitet diese Daten auch
+    außerhalb der EU. Grundlage der Übermittlung nach Art. 44 ff. DSGVO ist{" "}
+    {dataLocation.googleTransferBasis}. Beim Abmelden löschen wir das Token
+    wieder; erteilst du dem Gerät die Benachrichtigungsberechtigung nicht, wird
+    gar keines angelegt.
+  </p>
+
+  <h3>Push im Browser</h3>
+  <p>
+    Im Browser läuft die Zustellung nicht über Firebase, sondern über die
+    Web-Push-Schnittstelle des Browsers selbst. Welcher Dienst zustellt,
+    entscheidet dein Browser und nicht wir: {processors.pushWeb}. Gespeichert
+    werden dafür die vom Browser vergebene Endpunkt-Adresse und zwei
+    Schlüsselwerte. Den Inhalt jeder Benachrichtigung verschlüsseln wir vor dem
+    Versand für genau diesen Browser; der Push-Dienst leitet ihn weiter, ohne
+    ihn lesen zu können, und erfährt damit den Endpunkt und den Zeitpunkt, aber
+    weder Titel noch Text. Push im Browser ist nur aktiv, wenn du es in den
+    Einstellungen selbst einschaltest.
   </p>
 
   <h2>5. Speicherdauer</h2>

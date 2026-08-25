@@ -6,8 +6,13 @@
  *  - Anbieter, Anschrift, Telefon: Impressum der live geschalteten
  *    lets-rave.com (gleicher Inhaber, Repo lets-rave_landing-page).
  *  - Aufsichtsbehörde (LDI NRW): Datenschutzerklärung von lets-rave.com.
- *  - Auftragsverarbeiter Supabase/Firebase: pertono-Repo (README,
+ *  - Auftragsverarbeiter Supabase/Brevo: pertono-Repo (README,
  *    docs/architecture.md, supabase/functions/).
+ *  - Die BEIDEN Push-Wege: app/lib/src/core/push/ (firebase_bootstrap.dart,
+ *    web_push_registrar.dart) und supabase/functions/_shared/push/ (fcm.ts,
+ *    web_push.ts) im pertono-Repo. Sie haben verschiedene Empfänger und
+ *    verschiedene Rechtsfolgen und stehen deshalb getrennt unten.
+ *  - Webspace: die Deploy-Workflows beider Repos.
  *
  * Die verbliebenen TODO-Felder sind ABSICHTLICH leer, weil die Repos sie
  * nicht hergeben — eine plausibel aussehende falsche Angabe ist gefährlicher
@@ -64,22 +69,64 @@ export const processors = {
   /** Datenbank, Auth und Speicher laufen auf Supabase (siehe pertono-Repo).
       Die Rolle ("Hosting" usw.) hängt die Datenschutz-Seite selbst an. */
   hosting: "Supabase",
-  /** Firebase existiert im Produkt nur für Cloud Messaging auf Android. */
-  push: "Google Firebase Cloud Messaging (nur Android)",
+  /**
+   * Firebase Cloud Messaging existiert im Produkt NUR auf Android:
+   * `firebaseBelongsOn` in app/lib/src/core/push/firebase_bootstrap.dart gibt
+   * überall sonst false zurück, und `cloudMessagingProvider` liefert dort null
+   * — der Web-Build und iOS legen also gar kein Gerätetoken an.
+   */
+  pushAndroid: "Google (Firebase Cloud Messaging)",
+  /**
+   * Der zweite, völlig getrennte Push-Weg: im Browser die Web-Push-Schnittstelle
+   * (RFC 8291/8292), ohne Firebase und ohne Google-JavaScript auf der Seite.
+   * Welcher Push-Dienst zustellt, entscheidet der Browser — siehe
+   * supabase/functions/_shared/push/web_push.ts und DECISIONS.md §4.
+   */
+  pushWeb: "der Push-Dienst des jeweiligen Browsers (Google, Mozilla oder Apple)",
   /**
    * Brevo (Brevo SAS, Paris — EU-Anbieter mit EU-Datenhaltung). Account und
    * Versand-Subdomain send.pertono.com sind eingerichtet (DKIM/SPF/DMARC
    * bei Checkdomain); das Backend stellt von MockEmailSender auf Brevo um.
    */
   email: "Brevo",
+  /**
+   * Webspace für pertono.com und app.pertono.com. Belegt durch die beiden
+   * Deploy-Workflows ("Deploy to Checkdomain" hier, "Deploy web to Checkdomain"
+   * im pertono-Repo), die per SFTP auf denselben Webspace spiegeln.
+   */
+  webHost: "Checkdomain",
+};
+
+/**
+ * Angaben zum Speicherort und zur Drittlandsübermittlung, die weder das
+ * pertono-Repo noch dieses Repo hergeben: beides sind Konsolen- bzw.
+ * Vertragstatsachen (Supabase-Dashboard, Google-Vertragsunterlagen).
+ *
+ * Sie stehen hier als sichtbarer Platzhalter, aus demselben Grund wie die
+ * Anbieterangaben oben: eine plausibel klingende, aber ungeprüfte Aussage über
+ * einen Speicherort ist gefährlicher als eine offensichtlich offene Stelle —
+ * eine Datenschutzerklärung, die etwas Falsches behauptet, ist schlechter als
+ * eine mit einer markierten Lücke.
+ */
+export const dataLocation = {
+  /** Region des Supabase-Projekts, z. B. "eu-central-1 (Frankfurt)". */
+  supabaseRegion: TODO,
+  /**
+   * Das Instrument nach Art. 46 DSGVO, auf das die Übermittlung an Google
+   * gestützt wird (Google-Auftragsverarbeitungszusatz mit Standardvertrags-
+   * klauseln, EU-US Data Privacy Framework o. Ä.) — erst eintragen, wenn der
+   * Vertrag tatsächlich geschlossen und die Grundlage geprüft ist.
+   */
+  googleTransferBasis: TODO,
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "21. August 2026";
+export const lastUpdated = "25. August 2026";
 
 const allValues = [
   ...Object.values(provider),
   ...Object.values(processors),
+  ...Object.values(dataLocation),
   lastUpdated,
 ];
 
