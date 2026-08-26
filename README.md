@@ -80,6 +80,16 @@ npm run build    # statischer Build nach dist/
 npm run preview  # dist/ lokal ansehen
 ```
 
+## Prüfung im Pull Request
+
+[`.github/workflows/pr-check.yml`](.github/workflows/pr-check.yml) führt bei
+jedem Pull Request auf `main` `npm ci`, `npm run check` und `npm run build`
+aus — dieselben Befehle in derselben Reihenfolge wie der Deploy, nur vor dem
+Merge statt danach. Der Job hat weder Secrets noch ein Environment und lädt
+nichts hoch, ist also auch für einen Pull Request aus einem Fork unbedenklich.
+Als *Required Check* in den Branch-Protection-Regeln hinterlegt, kommt kein
+Branch mehr nach `main`, dessen Build bricht.
+
 ## Deployment: Checkdomain per SFTP
 
 `pertono.com` liegt bei Checkdomain. Der Workflow
