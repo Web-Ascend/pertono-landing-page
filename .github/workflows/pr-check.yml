@@ -1,0 +1,67 @@
+name: PR Check
+
+# Läuft bei jedem Pull Request auf main: dieselben zwei Befehle, die deploy.yml
+# vor dem Upload ausführt — nur eben vorher.
+#
+# Der Anlass: `npm run check` und `npm run build` standen bisher ausschließlich
+# in deploy.yml, also HINTER dem Merge und unmittelbar vor einem lftp-Mirror,
+# der bereits Dateien auf den Webspace schreibt. Ein Build, der bricht, fiel
+# damit erst auf, als main schon kaputt war. `npm run check` ist hier ein
+# echter Check und keine Formalie: die Ratgeber und Vergleiche sind
+# Content-Collections mit Schema (src/content.config.ts), eine zu lange
+# Meta-Description reicht zum Bruch.
+#
+# Bewusst ohne Secrets, ohne `environment:` und ohne einen einzigen
+# Deploy-Schritt. Ein Pull Request aus einem Fork führt fremden Code aus —
+# npm-Lifecycle-Skripte und Astro-Integrationen laufen beim Bauen —, und was
+# dieser Job nicht besitzt, kann dabei auch nicht abhandenkommen. Er baut und
+# wirft das Ergebnis weg; hochgeladen wird weiterhin nur aus deploy.yml, dessen
+# Zugangsdaten im Environment `production` liegen und dort an main gebunden
+# sind.
+on:
+  pull_request:
+    branches: [ main ]
+
+# Kein `paths:`-Filter, obwohl fast jede Datei hier in den Build eingeht: ein
+# Workflow, den ein Filter gar nicht erst startet, erzeugt keinen Check-Run —
+# und ein Required Check, der nie berichtet, blockiert den Pull Request
+# dauerhaft.
+
+# Nur Lesen. Der Job baut, kommentiert nichts und schreibt nichts zurück.
+permissions:
+  contents: read
+
+# Eine Prüfung je Pull Request. Anders als beim Deploy wird ein laufender Job
+# hier sehr wohl abgebrochen: er spiegelt nichts, es gibt also keinen halben
+# Zustand zu hinterlassen, und das Urteil über einen überholten Commit
+# interessiert niemanden mehr.
+concurrency:
+  group: pr-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # Hänger-Schutz wie im Deploy: npm ci und ein Astro-Build sind eine Sache
+    # von Minuten. Alles darüber ist ein stehengebliebener Runner, und ohne
+    # Timeout blockiert der den Job bis zum 6-Stunden-Default.
+    timeout-minutes: 10
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # Reihenfolge und Befehle absichtlich identisch zu deploy.yml. Laufen die
+      # beiden auseinander, prüft dieser Job etwas anderes als das, was später
+      # ausgeliefert wird — dann ist er schlimmer als kein Check.
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
