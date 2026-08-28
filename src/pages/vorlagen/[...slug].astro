@@ -1,0 +1,86 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("vorlagen", ({ data }) => !data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const dateFormat = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" });
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  publishedAt={entry.data.publishedAt}
+  updatedAt={entry.data.updatedAt}
+>
+  <article class="prose">
+    <h1>{entry.data.title}</h1>
+    <p class="meta">
+      <time datetime={entry.data.publishedAt.toISOString()}>
+        {dateFormat.format(entry.data.publishedAt)}
+      </time>
+      {entry.data.updatedAt && <>&nbsp;· aktualisiert {dateFormat.format(entry.data.updatedAt)}</>}
+    </p>
+
+    {/* Der Download zuerst: Wer "… Muster" sucht, will die Datei, nicht den
+        Artikel. Der Text darunter ist für die, die wissen wollen, was
+        hineingehört — und für die Suchmaschine. */}
+    <aside class="downloads" aria-label="Vorlage herunterladen">
+      {
+        entry.data.downloads.map((d) => (
+          <a class="download" href={d.file} download>
+            <span class="download-label">{d.label}</span>
+            <span class="download-format">{d.format} · kostenlos, ohne Anmeldung</span>
+          </a>
+        ))
+      }
+    </aside>
+
+    <Content />
+  </article>
+</BaseLayout>
+
+<style>
+  .prose {
+    max-width: 42rem;
+  }
+  .prose :global(h2) {
+    margin-top: 2.5rem;
+  }
+  .prose :global(li) {
+    margin-block: 0.4rem;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+  .downloads {
+    display: grid;
+    gap: 0.75rem;
+    margin-block: 1.5rem 2rem;
+  }
+  .download {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--border, #d6d9de);
+    border-radius: 0.5rem;
+    text-decoration: none;
+  }
+  .download:hover .download-label {
+    text-decoration: underline;
+  }
+  .download-label {
+    font-weight: 600;
+  }
+  .download-format {
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+</style>

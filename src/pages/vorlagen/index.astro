@@ -1,0 +1,61 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const entries = (await getCollection("vorlagen", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+);
+---
+
+<BaseLayout
+  title="Vorlagen für Vereine"
+  description="Kassenbericht, Beitragsordnung, Einladung zur Jahreshauptversammlung: geprüfte Vorlagen zum Herunterladen — kostenlos, ohne Anmeldung, ohne E-Mail-Adresse."
+>
+  <h1>Vorlagen</h1>
+  <p class="lead">
+    Die Formulare, die ein Vorstand wirklich braucht — zum Herunterladen und
+    Ausfüllen. Kostenlos, ohne Anmeldung, ohne E-Mail-Adresse.
+  </p>
+
+  {entries.length === 0 && <p>Die ersten Vorlagen erscheinen in Kürze.</p>}
+
+  <ul class="entries">
+    {
+      entries.map((entry) => (
+        <li>
+          <article>
+            <h2>
+              <a href={`/vorlagen/${entry.id}/`}>{entry.data.title}</a>
+            </h2>
+            <p>{entry.data.description}</p>
+          </article>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    max-width: 42rem;
+    font-size: 1.15rem;
+  }
+  .entries {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 2rem;
+    margin-block: 2.5rem;
+  }
+  .entries h2 {
+    margin-block: 0 0.25rem;
+    font-size: 1.25rem;
+  }
+  .entries a {
+    text-decoration: none;
+  }
+  .entries a:hover {
+    text-decoration: underline;
+  }
+</style>
