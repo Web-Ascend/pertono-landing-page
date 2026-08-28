@@ -14,6 +14,12 @@ import { glob } from "astro/loaders";
  * switch. They carry a competitor name, so the schema requires the fields that
  * keep such a page honest and legally safe: when it was last checked, and
  * against which version.
+ *
+ * `vorlagen` holds template pages — a treasurer searching "Kassenbericht
+ * Verein Muster" wants a file, not an article. Each entry names the files it
+ * offers (self-hosted under /vorlagen/dateien/, no external host, no email
+ * gate) and the search phrase it answers, so the page's job stays visible in
+ * the frontmatter.
  */
 
 const blog = defineCollection({
@@ -43,4 +49,29 @@ const vergleich = defineCollection({
   }),
 });
 
-export const collections = { blog, vergleich };
+const vorlagen = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/vorlagen" }),
+  schema: z.object({
+    title: z.string().max(70),
+    description: z.string().min(50).max(160),
+    // The phrase this page exists to answer, e.g. "Kassenbericht Verein
+    // Muster". Kept in the frontmatter so nobody has to guess the intent
+    // when editing the page later.
+    searchPhrase: z.string(),
+    downloads: z
+      .array(
+        z.object({
+          label: z.string(),
+          // Path under public/, e.g. /vorlagen/dateien/kassenbericht-verein.docx
+          file: z.string().startsWith("/vorlagen/dateien/"),
+          format: z.enum(["DOCX", "PDF", "XLSX"]),
+        }),
+      )
+      .min(1, "A template page without a file is a blog post in disguise"),
+    publishedAt: z.coerce.date(),
+    updatedAt: z.coerce.date().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, vergleich, vorlagen };
