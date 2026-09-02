@@ -23,8 +23,32 @@ RedirectMatch 301 ^/(de|en)(/.*)?$ /
 RewriteEngine On
 RewriteRule ^einladung/([A-Za-z0-9-]+)/?$ https://app.pertono.com/?invite=$1 [R=302,L,NE]
 
+# ── Security-Header (Review 2026-09, W-1) ────────────────────────────────────
+# Die Seite hat kein Client-JavaScript, keine Formulare, keine Cookies und
+# keine fremden Origins — der Build (dist/) enthält genau ein <script>, und das
+# ist der JSON-LD-Datenblock, den kein Browser ausführt. Die CSP kann deshalb
+# streng sein: nichts außer der eigenen Origin, gar kein Skript, keine
+# Einbettung in fremde Seiten. 'unsafe-inline' bei style-src braucht Astro, das
+# die seitenbezogenen <style>-Blöcke in den Kopf schreibt.
+#
+# Die Vorgängerlösung (`_headers`, SECURITY_REVIEW.md F-12) war eine
+# Netlify-Konvention und hat auf diesem Apache nie gegriffen. mod_headers
+# dagegen läuft hier nachweislich — der Referrer-Header unten geht seit
+# Monaten darüber raus.
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # Ein Jahr, mit Subdomains — app.pertono.com spricht ohnehin nur HTTPS. Kein
+  # `preload`: das ist ein Browser-Eintrag, den man nicht zurücknimmt.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+</IfModule>
+
 # Der Code steht in der URL; er soll nicht zusätzlich über den Referer-Header
-# irgendwohin mitwandern.
+# irgendwohin mitwandern. Nach dem allgemeinen Header oben, damit dieses `set`
+# ihn für die Einladungs-URLs ersetzt statt umgekehrt.
 <IfModule mod_headers.c>
   SetEnvIf Request_URI "^/einladung/" pertono_invite=1
   Header always set Referrer-Policy "no-referrer" env=pertono_invite
