@@ -1,0 +1,23 @@
+version: 2
+
+# Dependabot für die Landing Page (Review 2026-09, CI-9). Die Actions sind auf
+# Commit-Hashes gepinnt, und ein Hash sagt einem nie, dass er veraltet ist —
+# Dependabot hebt ihn an und legt die Release-Notes in einen Pull Request. Die
+# npm-Abhängigkeiten (Astro und seine Integrationen) bauen die Seite, die jeder
+# Besucher lädt; package-lock.json pinnt sie, und hier wird das Pin bewegt.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ["*"]

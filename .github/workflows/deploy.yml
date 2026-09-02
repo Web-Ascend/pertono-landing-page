@@ -41,9 +41,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -119,15 +118,17 @@ jobs:
           # ── Host-Key-Verifikation (Schutz gegen MITM auf dem Deploy-Kanal) ──
           # Ist das Secret SFTP_KNOWN_HOSTS gesetzt (Ausgabe von
           #   ssh-keyscan -p <SFTP_PORT> <SFTP_HOST>), wird der Host-Key streng
-          # geprüft. Ohne das Secret läuft der Deploy trotzdem (nicht
-          # brechend), aber mit deutlicher Warnung im Log.
+          # geprüft. Ohne das Secret bricht der Deploy ab.
           if [ -n "$SFTP_KNOWN_HOSTS" ]; then
             KH="$RUNNER_TEMP/known_hosts"
             printf '%s\n' "$SFTP_KNOWN_HOSTS" > "$KH"
             SFTP_VERIFY=$(printf 'set sftp:auto-confirm no\nset sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=%s"' "$KH")
           else
-            echo "::warning::SFTP_KNOWN_HOSTS nicht gesetzt — der SFTP-Host-Key wird NICHT verifiziert (MITM-Risiko). Absichern: 'ssh-keyscan -p <SFTP_PORT> <SFTP_HOST>' ausführen und die Ausgabe als Repository-Secret SFTP_KNOWN_HOSTS hinterlegen."
-            SFTP_VERIFY='set sftp:auto-confirm yes'
+            # Abbruch statt Warnung: eine Warnung, die niemand liest, ist von
+            # einem Deploy, der jedem antwortenden Host vertraut, nicht zu
+            # unterscheiden (Review 2026-09, CI-7).
+            echo "::error::SFTP_KNOWN_HOSTS nicht gesetzt — Deploy ohne Host-Key-Verifikation wird verweigert. Absichern: 'ssh-keyscan -p <SFTP_PORT> <SFTP_HOST>' ausführen und die Ausgabe als Secret SFTP_KNOWN_HOSTS in der Umgebung hinterlegen."
+            exit 1
           fi
 
           lftp sftp://"$SFTP_HOST":"$SFTP_PORT" <<EOF
