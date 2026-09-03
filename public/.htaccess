@@ -6,6 +6,13 @@
 
 AddDefaultCharset UTF-8
 
+# ── Seiten als index.php ───────────────────────────────────────────────────
+# Der Build verpackt jede index.html in eine index.php (scripts/wrap-php.mjs):
+# nginx beim Hoster liefert vorhandene .html am Apache vorbei aus, und dann
+# fehlen die Security-Header unten. Eine .php-Datei geht immer durch Apache.
+# Die URLs bleiben gleich.
+DirectoryIndex index.php index.html
+
 # Die Sprachpfade der Vorgänger-Site führen ins Leere — alte Links und
 # gecachte 301s landen auf der Startseite statt auf einem 404.
 RedirectMatch 301 ^/(de|en)(/.*)?$ /
