@@ -160,6 +160,16 @@ jobs:
           err() { echo "::error::$1"; fail=1; }
           warn() { echo "::warning::$1"; }
 
+          # Security-Header: Genau dafür laufen die Seiten als index.php durch
+          # Apache (scripts/wrap-php.mjs). Fehlt einer in der Antwort auf /,
+          # liefert nginx wieder direkt aus oder Apache übernimmt die .htaccess
+          # nicht — beides muss auffallen.
+          code="$(status_of_headers() { curl -sS -o /dev/null -D /tmp/h -w '%{http_code}' "$1"; }; status_of_headers "$base/")"
+          [ "$code" = "200" ] || err "Startseite: HTTP $code statt 200"
+          for h in content-security-policy strict-transport-security x-frame-options x-content-type-options; do
+            grep -qi "^$h:" /tmp/h || err "Startseite: Header $h fehlt — läuft die Seite durch Apache/PHP? (DirectoryIndex index.php, PHP aktiv?)"
+          done
+
           status_of() { curl -sS -o "$2" -D /tmp/h -w '%{http_code}' "$1"; }
           ct_of() { tr -d '\r' < /tmp/h | awk -F': ' 'tolower($1)=="content-type"{print tolower($2)}'; }
 
