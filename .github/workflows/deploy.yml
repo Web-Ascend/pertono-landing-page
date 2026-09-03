@@ -68,6 +68,7 @@ jobs:
           SFTP_PASSWORD:    ${{ secrets.SFTP_PASSWORD }}
           SFTP_PORT:        ${{ secrets.SFTP_PORT }}
           SFTP_REMOTE_PATH: ${{ secrets.SFTP_REMOTE_PATH }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
         run: |
           missing=""
           [ -z "$SFTP_HOST" ]        && missing="$missing SFTP_HOST"
@@ -75,6 +76,9 @@ jobs:
           [ -z "$SFTP_PASSWORD" ]    && missing="$missing SFTP_PASSWORD"
           [ -z "$SFTP_PORT" ]        && missing="$missing SFTP_PORT"
           [ -z "$SFTP_REMOTE_PATH" ] && missing="$missing SFTP_REMOTE_PATH"
+          # Auch hier, nicht erst beim Upload: ein fehlender Host-Key soll nach
+          # Sekunden abbrechen, nicht nach dem ganzen Build.
+          [ -z "$SFTP_KNOWN_HOSTS" ] && missing="$missing SFTP_KNOWN_HOSTS"
           if [ -n "$missing" ]; then
             echo "::error::Fehlende SFTP-Secrets:$missing — als Environment-Secrets im Environment 'production' anlegen (siehe README)"
             exit 1
@@ -122,7 +126,7 @@ jobs:
           if [ -n "$SFTP_KNOWN_HOSTS" ]; then
             KH="$RUNNER_TEMP/known_hosts"
             printf '%s\n' "$SFTP_KNOWN_HOSTS" > "$KH"
-            SFTP_VERIFY=$(printf 'set sftp:auto-confirm no\nset sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=%s"' "$KH")
+            SFTP_VERIFY=$(printf 'set sftp:auto-confirm no\nset sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=%s -o GlobalKnownHostsFile=/dev/null"' "$KH")
           else
             # Abbruch statt Warnung: eine Warnung, die niemand liest, ist von
             # einem Deploy, der jedem antwortenden Host vertraut, nicht zu
@@ -196,3 +200,25 @@ jobs:
 
           [ "$fail" = "0" ] || { echo "Deeplink-Prüfung fehlgeschlagen."; exit 1; }
           echo "Deeplink-Endpunkte OK."
+
+      # Die Header gibt es nur, wenn der Host die .htaccess auswertet — und nur
+      # einmal, wenn er sie nicht zusätzlich selbst setzt. Zwei gleichnamige
+      # Header sind eine Policy, die der Browser schneidet oder ignoriert.
+      # Beides lässt sich nur an der Live-Antwort prüfen (Review 2026-09, W-1).
+      - name: Security-Header prüfen
+        run: |
+          set -uo pipefail
+          fail=0
+          curl -sS -o /dev/null -D /tmp/sh "https://pertono.com/" \
+            || { echo "::error::pertono.com antwortet nicht"; exit 1; }
+          tr -d '\r' < /tmp/sh > /tmp/sh.lf
+          for name in strict-transport-security content-security-policy x-frame-options \
+                      x-content-type-options referrer-policy permissions-policy; do
+            n="$(grep -ci "^$name:" /tmp/sh.lf || true)"
+            if [ "$n" != "1" ]; then
+              echo "::error::$name wird ${n}-mal gesendet — erwartet genau einmal (greift mod_headers, setzt der Host ihn zusätzlich?)"
+              fail=1
+            fi
+          done
+          [ "$fail" = "0" ] || exit 1
+          echo "Security-Header OK."
