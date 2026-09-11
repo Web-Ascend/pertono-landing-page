@@ -100,6 +100,19 @@ lets-rave Landing Page, die ebenfalls dort hostet. (Abweichungen: Astro-Build
 vor dem Upload, GitHub-gehosteter Runner statt self-hosted, weil dieses Repo
 öffentlich ist, und der Zielpfad als Secret statt im Klartext.)
 
+**Jede Seite liegt in `dist/` als `index.php`, nicht als `index.html`.** Die
+Seite bleibt statisch und ohne Client-JavaScript: `scripts/wrap-php.mjs` setzt
+nach `astro build` vor jede Seite einen PHP-Vorspann, der nur die
+Security-Header setzt und dann das HTML ausgibt. Grund: Beim Hoster steht nginx
+vor Apache und liefert vorhandene `.html`-Dateien direkt aus, ohne Apache und
+damit ohne die Header aus `public/.htaccess` (gemessen am 2. September 2026:
+`pertono.com/` trug keinen davon). Eine `.php`-Datei geht immer durch Apache.
+Die Werte im Vorspann liest der Build aus `public/.htaccess`, dort und nur dort
+werden Header gepflegt; die URLs ändern sich nicht. Der Deploy bricht ab, wenn
+`https://pertono.com/` ohne CSP, HSTS, X-Frame-Options oder
+X-Content-Type-Options antwortet. Lokal ansehen: `npm run build && php -S
+localhost:8080 -t dist`.
+
 ### Einmalige Einrichtung
 
 1. **Environment anlegen:** *Settings → Environments → New environment* →
