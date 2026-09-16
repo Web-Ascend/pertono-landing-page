@@ -14,29 +14,36 @@
  *    verschiedene Rechtsfolgen und stehen deshalb getrennt unten.
  *  - Webspace: die Deploy-Workflows beider Repos.
  *
- * Die verbliebenen TODO-Felder sind ABSICHTLICH leer, weil die Repos sie
- * nicht hergeben — eine plausibel aussehende falsche Angabe ist gefährlicher
- * als eine offensichtlich leere.
+ * Ein TODO-Feld bleibt leer, solange die Quellen es nicht hergeben — eine
+ * plausibel aussehende falsche Angabe ist gefährlicher als eine
+ * offensichtlich leere.
  *
  * Die Rechtsseiten (/datenschutz/, /impressum/) tragen ihr noindex DAUERHAFT
  * und unabhängig von dieser Datei — sie sollen nie in einem Suchindex landen
  * (die Play Console braucht nur Erreichbarkeit, keine Indexierung). Das Gate
  * hier unten konsumiert das BaseLayout für JEDE Seite der Site — Startseite,
- * Preise, Ratgeber, Vergleiche: solange ein TODO offen oder `legalReviewDone`
+ * Preise, Ratgeber, Vergleiche: solange ein TODO offen oder `reviewDone`
  * false ist, bleibt alles auf noindex (eine öffentliche Preisseite mit
  * unfertigem Impressum gehört genauso wenig in den Index wie die Startseite).
- * Das löst sich von selbst, sobald alles vollständig UND anwaltlich geprüft
- * ist — es gibt keinen zweiten Schalter, der vergessen werden kann.
+ * Es gibt keinen zweiten Schalter, der vergessen werden kann.
  */
 
 /** Sichtbarer Platzhalter, identisch zu den Quelltexten im pertono-Repo. */
 export const TODO = "[ausfüllen]";
 
 /**
- * Erst auf `true` setzen, wenn der Text anwaltlich geprüft wurde.
- * Vorher bleibt die Startseite auf noindex — unabhängig von den Feldern unten.
+ * True, seit die Texte gegen den Ist-Zustand der Site geprüft sind — nicht
+ * anwaltlich, sondern gegen den Code: Audit vom 16.09.2026 ergab keine
+ * Formulare, kein Fetch, keine externen Skripte, keine Cookies und keinen
+ * Web-Storage in src/ (einzige externe Verweise: der Play-Store-Link und das
+ * schema.org-Vokabular im JSON-LD); Abschnitt 7 der Datenschutzerklärung
+ * beschreibt genau diesen Zustand. Die anwaltliche Prüfung folgt im
+ * Kanzlei-Mandat und ist auf Entscheidung des Inhabers bewusst kein
+ * Index-Blocker mehr. Wer der Site eine neue Datenverarbeitung hinzufügt
+ * (Formular, Analytics, externes Embed), stellt hier zurück auf false,
+ * bis die Datenschutzerklärung sie beschreibt.
  */
-export const legalReviewDone = false;
+export const reviewDone = true;
 
 /** Anbieter- und Pflichtangaben (§ 5 DDG, Art. 13 DSGVO). */
 export const provider = {
@@ -109,19 +116,28 @@ export const processors = {
  * eine mit einer markierten Lücke.
  */
 export const dataLocation = {
-  /** Region des Supabase-Projekts, z. B. "eu-central-1 (Frankfurt)". */
-  supabaseRegion: TODO,
   /**
-   * Das Instrument nach Art. 46 DSGVO, auf das die Übermittlung an Google
-   * gestützt wird (Google-Auftragsverarbeitungszusatz mit Standardvertrags-
-   * klauseln, EU-US Data Privacy Framework o. Ä.) — erst eintragen, wenn der
-   * Vertrag tatsächlich geschlossen und die Grundlage geprüft ist.
+   * Aus dem Supabase-Dashboard des Projekts "pertono" (kwxzafsmuidhadyfrouy)
+   * abgelesen am 16.09.2026: Region eu-west-1.
    */
-  googleTransferBasis: TODO,
+  supabaseRegion: "eu-west-1 (AWS-Region Irland, EU)",
+  /**
+   * Google LLC ist unter dem EU-US Data Privacy Framework zertifiziert
+   * (dataprivacyframework.gov, Participant 5780); die Zertifizierung umfasst
+   * laut firebase.google.com/support/privacy auch Firebase Cloud Messaging.
+   * Ergänzend gelten die Standardvertragsklauseln der Firebase Data
+   * Processing and Security Terms (firebase.google.com/terms/
+   * data-processing-terms), die mit der Nutzung von Firebase einbezogen
+   * sind. Beides geprüft am 16.09.2026.
+   */
+  googleTransferBasis:
+    "das EU-US Data Privacy Framework, unter dem Google zertifiziert ist, " +
+    "ergänzt um die EU-Standardvertragsklauseln in Googles " +
+    "Datenverarbeitungsbedingungen für Firebase",
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "25. August 2026";
+export const lastUpdated = "16. September 2026";
 
 const allValues = [
   ...Object.values(provider),
@@ -138,4 +154,4 @@ export const hasOpenTodos = allValues.includes(TODO);
  * UND geprüft ist. Die Rechtsseiten und die 404 setzen ihr dauerhaftes
  * noindex zusätzlich selbst.
  */
-export const noindex = hasOpenTodos || !legalReviewDone;
+export const noindex = hasOpenTodos || !reviewDone;
