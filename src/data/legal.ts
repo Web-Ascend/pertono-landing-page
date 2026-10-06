@@ -97,6 +97,15 @@ export const processors = {
    */
   email: "Brevo",
   /**
+   * Cloudflare Turnstile, die Sicherheitsprüfung vor der Code-Anforderung.
+   * Geladen nur auf der Anmeldeseite der App, im Browser direkt und auf
+   * Android in einer WebView, und nur in Builds mit TURNSTILE_SITE_KEY
+   * (pertono-Repo: app/lib/src/core/captcha/, app/web/turnstile.js). Seit dem
+   * Web-Deploy vom 06.10.2026 ist der Key gesetzt. Einordnung und offene
+   * Fragen: pertono-Repo, docs/auftragsverarbeitung.md (A.1, C.12).
+   */
+  captcha: "Cloudflare, Inc. (USA)",
+  /**
    * Webspace für pertono.com und app.pertono.com. Belegt durch die beiden
    * Deploy-Workflows ("Deploy to Checkdomain" hier, "Deploy web to Checkdomain"
    * im pertono-Repo), die per SFTP auf denselben Webspace spiegeln.
@@ -134,10 +143,19 @@ export const dataLocation = {
     "das EU-US Data Privacy Framework, unter dem Google zertifiziert ist, " +
     "ergänzt um die EU-Standardvertragsklauseln in Googles " +
     "Datenverarbeitungsbedingungen für Firebase",
+  /**
+   * Cloudflare gibt an, unter dem EU-US Data Privacy Framework zertifiziert
+   * zu sein und daneben die EU-Standardvertragsklauseln in seinem DPA zu
+   * verwenden (Cloudflare Trust Hub, „GDPR“). Vorgabe des Inhabers vom
+   * 07.10.2026; die anwaltliche Prüfung steht wie für den ganzen Text aus.
+   */
+  cloudflareTransferBasis:
+    "das EU-US Data Privacy Framework, unter dem Cloudflare zertifiziert ist, " +
+    "ergänzt um die EU-Standardvertragsklauseln",
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "16. September 2026";
+export const lastUpdated = "7. Oktober 2026";
 
 const allValues = [
   ...Object.values(provider),
