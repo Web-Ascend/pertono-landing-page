@@ -19,8 +19,21 @@ import BaseLayout from "../layouts/BaseLayout.astro";
  * a Beitragslauf converts on the feature, long before it grows past 50
  * members — and the FAQ below says so rather than letting somebody find out
  * after importing their members.
+ *
+ * A feature that is planned but not built yet is listed as `{ soon: text }`
+ * and printed with a "bald" mark. The page is held to what the app does
+ * today: somebody comparing it line by line with another tool must not find
+ * a promise the app cannot keep.
  */
-const plans = [
+type Feature = string | { soon: string };
+const plans: {
+  name: string;
+  perMonth: number;
+  perYear: number;
+  limit: string;
+  features: Feature[];
+  highlighted: boolean;
+}[] = [
   {
     name: "Kostenlos",
     perMonth: 0,
@@ -44,7 +57,7 @@ const plans = [
       "Beitragsläufe und Beitragsordnung",
       "SEPA-Lastschrift als XML-Datei",
       "Kassenbericht für die Jahreshauptversammlung",
-      "Abteilungen und Abteilungsleitung",
+      { soon: "Abteilungen und Abteilungsleitung" },
     ],
     highlighted: true,
   },
@@ -53,7 +66,11 @@ const plans = [
     perMonth: 19,
     perYear: 228,
     limit: "bis 800 Mitglieder",
-    features: ["Alles aus Verein", "Automatischer Kontoabgleich", "Mahnläufe"],
+    features: [
+      "Alles aus Verein",
+      "Mahnläufe",
+      { soon: "Automatischer Kontoabgleich" },
+    ],
     highlighted: false,
   },
   {
@@ -61,7 +78,7 @@ const plans = [
     perMonth: 29,
     perYear: 348,
     limit: "ohne Mitgliederlimit",
-    features: ["Alles aus Groß", "Datenexport für den Steuerberater"],
+    features: ["Alles aus Groß", { soon: "Datenexport für den Steuerberater" }],
     highlighted: false,
   },
 ];
@@ -81,7 +98,8 @@ const plans = [
   <p class="notice" role="note">
     <strong>Noch nicht final:</strong> Pertono ist in Entwicklung. Die Tarife hier
     zeigen die geplante Struktur, die Beträge können sich bis zum Start noch
-    ändern.
+    ändern. Was mit „bald“ markiert ist, ist geplant, aber noch nicht in der
+    App.
   </p>
 
   <ul class="plans">
@@ -100,9 +118,15 @@ const plans = [
           </p>
           <p class="limit">{plan.limit}</p>
           <ul class="features">
-            {plan.features.map((feature) => (
-              <li>{feature}</li>
-            ))}
+            {plan.features.map((feature) =>
+              typeof feature === "string" ? (
+                <li>{feature}</li>
+              ) : (
+                <li class="soon">
+                  {feature.soon} <span class="soon-mark">bald</span>
+                </li>
+              ),
+            )}
           </ul>
         </li>
       ))
@@ -233,6 +257,22 @@ const plans = [
 
   .features li {
     margin-block: 0.4rem;
+  }
+
+  .soon {
+    color: var(--muted);
+  }
+
+  .soon-mark {
+    display: inline-block;
+    margin-left: 0.25rem;
+    padding: 0 0.4rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   h3 {

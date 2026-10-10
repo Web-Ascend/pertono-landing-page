@@ -60,6 +60,6 @@ für Fotos auf der Vereinswebsite, als eigenes, freiwilliges Feld.
 ## Vom Papier in die Verwaltung
 
 Der Antrag ist der Anfang der Mitgliederakte: In Pertono wird das neue
-Mitglied mit Eintrittsdatum, Beitragsklasse und Abteilung angelegt und per
-Einladung in die App geholt — Stammdaten pflegt es dann selbst, statt dass
-der Vorstand Adressänderungen hinterherträgt.
+Mitglied mit Eintrittsdatum und Beitragsklasse angelegt und per Einladung in
+die App geholt — Name, E-Mail und Telefon pflegt es dann selbst, und das
+SEPA-Mandat erteilt es direkt in der App.
