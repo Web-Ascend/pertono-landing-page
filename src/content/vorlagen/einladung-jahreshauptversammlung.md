@@ -59,5 +59,5 @@ Kassenprüfer, Entlastung, Wahlen, Anträge, Verschiedenes.
   Einladung aufbewahren — bei einer Anfechtung ist das der Nachweis.
 
 Zu- und Absagen einsammeln ist der mühsame Teil danach: Wer den Termin in
-Pertono anlegt, lädt die Mitglieder per Push ein und sieht die Rückmeldungen
+Pertono anlegt und per Ankündigung bekanntgibt, sieht die Rückmeldungen
 gebündelt — ohne WhatsApp-Gruppe und ohne Zettelliste.
