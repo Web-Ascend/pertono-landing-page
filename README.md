@@ -101,7 +101,8 @@ vor dem Upload, GitHub-gehosteter Runner statt self-hosted, weil dieses Repo
 öffentlich ist, und der Zielpfad als Secret statt im Klartext.)
 
 **Jede Seite liegt in `dist/` als `index.php`, nicht als `index.html`.** Die
-Seite bleibt statisch und ohne Client-JavaScript: `scripts/wrap-php.mjs` setzt
+Seite bleibt statisch und ohne eigenes Client-JavaScript (einziges Skript: das
+selbst gehostete Plausible von `insights.pertono.com`): `scripts/wrap-php.mjs` setzt
 nach `astro build` vor jede Seite einen PHP-Vorspann, der nur die
 Security-Header setzt und dann das HTML ausgibt. Grund: Beim Hoster steht nginx
 vor Apache und liefert vorhandene `.html`-Dateien direkt aus, ohne Apache und
