@@ -103,18 +103,6 @@ const nav = [
       crossorigin
     />
 
-    <!-- Plausible Analytics: cookielos, selbst gehostet in der EU
-         (insights.pertono.com), keine personenbezogenen Daten an Dritte, kein
-         Drittlandtransfer — deshalb keine Einwilligung und kein Cookie-Banner.
-         Beschrieben in Abschnitt 7 der Datenschutzerklärung; die CSP in
-         public/.htaccess lässt genau diese Origin zu. is:inline, damit Astro
-         das externe Skript nicht zu bündeln versucht. -->
-    <script
-      is:inline
-      defer
-      data-domain="pertono.com"
-      src="https://insights.pertono.com/js/script.js"></script>
-
     <!-- Seitenspezifischer Head-Inhalt, z. B. JSON-LD. -->
     <slot name="head" />
   </head>

@@ -36,9 +36,8 @@ export const TODO = "[ausfüllen]";
  * anwaltlich, sondern gegen den Code: Audit vom 16.09.2026 ergab keine
  * Formulare, kein Fetch, keine externen Skripte, keine Cookies und keinen
  * Web-Storage in src/ (einzige externe Verweise: der Play-Store-Link und das
- * schema.org-Vokabular im JSON-LD). Seit 18.10.2026 kommt genau ein externes
- * Skript dazu: selbst gehostetes Plausible (insights.pertono.com) im
- * BaseLayout. Abschnitt 7 der Datenschutzerklärung beschreibt diesen Zustand. Die anwaltliche Prüfung folgt im
+ * schema.org-Vokabular im JSON-LD); Abschnitt 7 der Datenschutzerklärung
+ * beschreibt genau diesen Zustand. Die anwaltliche Prüfung folgt im
  * Kanzlei-Mandat und ist auf Entscheidung des Inhabers bewusst kein
  * Index-Blocker mehr. Wer der Site eine neue Datenverarbeitung hinzufügt
  * (Formular, Analytics, externes Embed), stellt hier zurück auf false,
@@ -112,13 +111,6 @@ export const processors = {
    * im pertono-Repo), die per SFTP auf denselben Webspace spiegeln.
    */
   webHost: "Checkdomain",
-  /**
-   * Server der selbst gehosteten Plausible-Instanz (insights.pertono.com).
-   * Übernommen aus der Datenschutzerklärung von lets-rave.com, deren Instanz
-   * insights.lets-rave.com beim selben Inhaber auf Hetzner läuft — vom
-   * Inhaber zu bestätigen, falls insights.pertono.com woanders steht.
-   */
-  analyticsHost: "Hetzner in Deutschland",
 };
 
 /**
@@ -163,7 +155,7 @@ export const dataLocation = {
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "18. Oktober 2026";
+export const lastUpdated = "7. Oktober 2026";
 
 const allValues = [
   ...Object.values(provider),
