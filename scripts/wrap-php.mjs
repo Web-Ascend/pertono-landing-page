@@ -42,10 +42,20 @@ console.log(`wrap-php: ${pages} Seiten als index.php`);
 
 function phpPreamble(htaccess) {
   const lines = [];
-  for (const m of htaccess.matchAll(/^\s*Header always set (\S+) "([^"]*)"(?:\s+"expr=([^"]*)")?\s*$/gm)) {
-    const [, name, value, expr] = m;
-    const call = `header(${phpString(`${name}: ${value}`)});`;
-    lines.push(expr ? `if ($https) { ${call} }` : call);
+  for (const m of htaccess.matchAll(/^\s*Header always set (\S+) "([^"]*)"(.*)$/gm)) {
+    const [, name, value, rest] = m;
+    // Keine `expr=`-Bedingung im Vorspann nachbauen: Der frühere
+    // `if ($https)`-Pfad las dafür X-Forwarded-Proto aus dem Request — ein
+    // Header, den jeder Client selbst setzen kann (Audit 2026-10, LP2-8a).
+    // Lieber bricht der Build ab, als eine Bedingung falsch nachzubauen.
+    if (/^\s*"expr=/.test(rest)) {
+      throw new Error(`public/.htaccess: \`Header always set ${name} … "expr=…"\` kann wrap-php nicht abbilden — Bedingung in der .htaccess lösen`);
+    }
+    // `env=…`-Zeilen (Referrer-Policy nur für /einladung/) gelten Antworten,
+    // die Apache selbst erzeugt (der 302), nicht den PHP-Seiten: überspringen,
+    // wie bisher.
+    if (rest.trim() !== "") continue;
+    lines.push(`header(${phpString(`${name}: ${value}`)});`);
   }
   if (lines.length === 0) throw new Error("public/.htaccess: keine `Header always set`-Zeilen gefunden");
   return [
@@ -55,8 +65,6 @@ function phpPreamble(htaccess) {
     "// Security-Header aus der .htaccess. Eine .php-Datei geht immer durch Apache.",
     "// Die Header stehen hier noch einmal (Werte beim Build aus public/.htaccess",
     "// übernommen). Generiert von scripts/wrap-php.mjs — Quelle ist src/.",
-    "$https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')",
-    "  || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');",
     ...lines,
     "?>",
     "",
