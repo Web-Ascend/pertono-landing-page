@@ -33,21 +33,24 @@ RewriteEngine On
 # Ohne diese Regel lieferte http://pertono.com/ die komplette Seite im
 # Klartext aus; HSTS greift erst nach dem ersten HTTPS-Kontakt, und
 # `upgrade-insecure-requests` wirkt nur auf Unterressourcen, nicht auf die
-# Navigation. Geprüft wird ausschließlich %{HTTPS}, also die Verbindung, die
-# Apache selbst sieht — bewusst NICHT X-Forwarded-Proto: diesen Header kann
-# jeder Client (und damit jeder Angreifer in der Mitte) selbst setzen und so
-# die Umleitung für sein Opfer abschalten. Steht zwischen nginx und Apache
-# irgendwann ein reiner HTTP-Proxy, würde diese Regel in eine Schleife laufen;
-# der Deploy prüft deshalb nach dem Upload, dass https://pertono.com/ mit 200
-# und http://pertono.com/ mit 301 antwortet.
+# Navigation. Loop-Schutz: Terminiert der Hoster TLS vorgelagert (Plesk-nginx)
+# und reicht unverschlüsselt an Apache weiter, ist %{HTTPS} dort „off", obwohl
+# der Client längst über HTTPS spricht — dann zählt X-Forwarded-Proto. Der
+# Header ist clientseitig setzbar, gibt einem Angreifer in der Mitte aber
+# nichts, was er nicht ohnehin hat (er kann den 301 schlicht nicht
+# weiterreichen), und Browser setzen ihn bei Navigationen nicht. Der Deploy
+# prüft nach dem Upload, dass https://pertono.com/ mit 200 und
+# http://pertono.com/ mit 301 antwortet.
 # Die www-Variante antwortet mit identischem Inhalt unter zwei Hostnamen; der
 # Canonical-Tag zeigt auf den Apex, die Umleitung macht das verbindlich.
 # Vor der Einladungs-Regel, damit auch ein http://…/einladung/<Code> erst auf
 # HTTPS und dann (302) in die App geht. Bewusst ohne NE: %{REQUEST_URI} ist in
 # mod_rewrite der bereits dekodierte Pfad, erst das Kodieren beim Ausgeben
 # macht aus „a b" wieder „a%20b"; der Query-String wird unverändert angehängt.
-RewriteCond %{HTTPS} !=on [OR]
 RewriteCond %{HTTP_HOST} ^www\.pertono\.com$ [NC]
+RewriteRule ^ https://pertono.com%{REQUEST_URI} [R=301,L]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
 RewriteRule ^ https://pertono.com%{REQUEST_URI} [R=301,L]
 
 RewriteRule ^einladung/([A-Za-z0-9-]+)/?$ https://app.pertono.com/?invite=$1 [R=302,L,NE]
