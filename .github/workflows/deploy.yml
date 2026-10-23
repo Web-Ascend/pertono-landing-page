@@ -10,6 +10,16 @@ name: Deploy to Checkdomain
 #  - GitHub-gehosteter Runner statt self-hosted: dieses Repo ist öffentlich,
 #    Actions-Minuten kosten hier nichts — und ein self-hosted Runner an einem
 #    öffentlichen Repo wäre ein Sicherheitsrisiko (Fork-PRs).
+#
+# Zwei Jobs statt einem (Audit 2026-10, LP2-5): `build` führt fremden Code
+# aus — npm-Pakete, Vite-Plugins, Astro-Integrationen — und besitzt deshalb
+# keine Secrets und kein Environment; es baut dist/ und legt es als Artefakt
+# ab. `deploy` besitzt die SFTP-Zugangsdaten aus dem Environment `production`,
+# führt aber weder npm noch Node aus: es lädt nur das Artefakt und spiegelt
+# es. Ein kompromittiertes Paket kann so zwar den Inhalt des Builds verändern
+# (das fängt kein Workflow ab), aber nicht mehr nebenher die Zugangsdaten
+# lesen, mit denen der Build hochgeladen wird — vorher liefen beide im selben
+# Job, unter demselben Benutzer, mit den Secrets in den Step-Umgebungen.
 on:
   push:
     branches: [ main ]
@@ -27,8 +37,88 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ── Bauen, ohne Secrets ─────────────────────────────────────────────────
+  build:
+    # Versionierter Runner statt `ubuntu-latest`: ein Deploy soll heute und
+    # in einem halben Jahr auf demselben Image laufen (Audit 2026-10, LP2-8i).
+    runs-on: ubuntu-24.04
+    # Hänger-Schutz: ohne Timeout blockiert ein hängender Step den Job bis
+    # zum 6-Stunden-Default. npm ci und ein Astro-Build sind Minutensache.
+    timeout-minutes: 10
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      # --ignore-scripts: kein Paket in der Lockfile braucht ein Install-Skript
+      # (sharp bringt seine Binaries als vorgebaute optionale Pakete mit), also
+      # bekommt auch keines die Gelegenheit, beim Installieren Code auszuführen.
+      # Identisch zu pr-check.yml — laufen die beiden auseinander, prüft der
+      # Pull Request etwas anderes als das, was hier ausgeliefert wird.
+      - run: npm ci --ignore-scripts
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      # ── Jeden in der CSP erlaubten Script-Host erreichen ──
+      # Anlass (Audit 2026-10, LP2-2): Die CSP erlaubte wochenlang einen Host,
+      # den es im DNS nicht gab — jede Seite lud ein Skript ins Leere, und die
+      # Origin hätte jeder übernehmen können, der den Record als Erster setzt.
+      # Ein Script-Host, der nicht per HTTPS antwortet, ist deshalb ein
+      # Deploy-Abbruch, kein Schönheitsfehler. Gelesen wird die CSP aus
+      # dist/.htaccess — das, was gleich hochgeladen wird. Erlaubt die CSP
+      # keine fremde Origin (`script-src 'none'`), gibt es nichts zu prüfen.
+      - name: CSP-Script-Hosts prüfen
+        run: |
+          set -uo pipefail
+          csp="$(grep -oE 'Content-Security-Policy "[^"]*"' dist/.htaccess | head -1 | sed 's/^[^"]*"//; s/"$//')"
+          [ -n "$csp" ] || { echo "::error::dist/.htaccess: keine Content-Security-Policy gefunden"; exit 1; }
+          directives="$(printf '%s' "$csp" | tr ';' '\n' | sed 's/^ *//; s/ *$//')"
+          # script-src gilt; fehlt die Direktive, greift default-src.
+          dir="$(printf '%s\n' "$directives" | grep -E '^script-src( |$)' || true)"
+          [ -n "$dir" ] || dir="$(printf '%s\n' "$directives" | grep -E '^default-src( |$)' || true)"
+          echo "Geprüfte Direktive: ${dir:-<keine>}"
+          hosts="$(printf '%s\n' "$dir" | tr ' ' '\n' | grep -E '^https://' | sed -E 's#^(https://[^/]+).*#\1#' | sort -u || true)"
+          if [ -z "$hosts" ]; then
+            echo "CSP erlaubt keine fremden Script-Hosts — nichts zu prüfen."
+            exit 0
+          fi
+          fail=0
+          for host in $hosts; do
+            case "$host" in
+              *'*'*) echo "::error::CSP-Script-Host $host enthält ein Wildcard — nicht prüfbar und zu weit gefasst"; fail=1; continue;;
+            esac
+            if code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "$host/" 2>"$RUNNER_TEMP/curl.err")"; then
+              echo "$host antwortet (HTTP $code)."
+            else
+              echo "::error::CSP-Script-Host $host ist per HTTPS nicht erreichbar: $(cat "$RUNNER_TEMP/curl.err") — Skript-Tag, CSP und Datenschutzerklärung müssen zusammenpassen; entweder den Host betreiben oder die Einbindung entfernen."
+              fail=1
+            fi
+          done
+          [ "$fail" = "0" ] || exit 1
+
+      # Dotfiles ausdrücklich mitnehmen: .htaccess und .well-known/ sind der
+      # Teil des Builds, den der Deploy separat hochlädt — ein Artefakt ohne
+      # sie wäre ein grüner Build mit totem Deeplink und alter Hoster-.htaccess.
+      - name: Build als Artefakt ablegen
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  # ── Hochladen, ohne Node ────────────────────────────────────────────────
   deploy:
-    runs-on: ubuntu-latest
+    needs: build
+    runs-on: ubuntu-24.04
     # Die SFTP-Secrets liegen als Environment-Secrets in `production`, nicht
     # als Repo-Secrets: das Repo ist öffentlich, und über die Deployment-
     # Branch-Regel des Environments (nur main) kommt kein Workflow auf einem
@@ -36,24 +126,22 @@ jobs:
     environment:
       name: production
       url: https://pertono.com
-    # Hänger-Schutz: ohne Timeout blockiert ein hängender Step den Job bis
-    # zum 6-Stunden-Default.
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
-      - name: Code auschecken
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      # Kein Checkout, kein npm: dieser Job kennt nur das Artefakt.
+      - name: Build-Artefakt laden
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          node-version: 22
-          cache: npm
+          name: dist
+          path: dist
 
-      - run: npm ci
-
-      - name: Type-check
-        run: npm run check
-
-      - name: Build
-        run: npm run build
+      - name: Artefakt vollständig?
+        run: |
+          set -u
+          for f in dist/index.php dist/.htaccess dist/.well-known/assetlinks.json dist/.well-known/apple-app-site-association; do
+            [ -f "$f" ] || { echo "::error::$f fehlt im Artefakt — ohne include-hidden-files oder ohne Build?"; exit 1; }
+          done
+          echo "Artefakt vollständig."
 
       # ── Vorab prüfen, dass die SFTP-Secrets gesetzt sind ──
       # Ohne diesen Check scheitert lftp mit kryptischen Meldungen — z. B.
@@ -232,3 +320,41 @@ jobs:
           done
           [ "$fail" = "0" ] || exit 1
           echo "Security-Header OK."
+
+      # ── HTTP → HTTPS (Audit 2026-10, LP2-3) ──
+      # Die Umleitung steht in der .htaccess und gilt damit nur für das, was
+      # Apache ausliefert — die Seiten (index.php). Statische Dateien, die
+      # nginx am Apache vorbei ausliefert (PDF, DOCX, CSS, Fonts), erfasst sie
+      # nicht; das geht nur beim Hoster (LP2-4). Hier wird geprüft, was die
+      # .htaccess leisten kann: die Startseite über HTTP muss 301 auf die
+      # HTTPS-Startseite liefern, und HTTPS selbst darf nicht umleiten — eine
+      # Schleife (Apache sieht hinter einem Proxy kein HTTPS) wäre sonst ein
+      # Totalausfall mit grünem Build. www ist nur eine Warnung: der Hostname
+      # gehört dem Hoster, nicht der .htaccess.
+      - name: HTTP-zu-HTTPS-Umleitung prüfen
+        run: |
+          set -uo pipefail
+          fail=0
+          check() { # $1 URL, $2 erwarteter Code, $3 erwartetes Location (leer = egal), $4 error|warning
+            local url="$1" want="$2" wantloc="$3" level="$4" code loc
+            if ! code="$(curl -sS -o /dev/null -D /tmp/rh -w '%{http_code}' --max-time 20 "$url")"; then
+              echo "::$level::$url antwortet nicht"; [ "$level" = error ] && fail=1; return
+            fi
+            loc="$(tr -d '\r' < /tmp/rh | awk -F': ' 'tolower($1)=="location"{print $2}')"
+            if [ "$code" != "$want" ]; then
+              echo "::$level::$url: HTTP $code statt $want${loc:+ (Location: $loc)} — greift die HTTPS-Regel in der .htaccess?"
+              [ "$level" = error ] && fail=1; return
+            fi
+            if [ -n "$wantloc" ] && [ "$loc" != "$wantloc" ]; then
+              echo "::$level::$url leitet auf '$loc' statt auf $wantloc um"
+              [ "$level" = error ] && fail=1; return
+            fi
+            echo "$url → HTTP $code${loc:+ → $loc}"
+          }
+          check "http://pertono.com/"            301 "https://pertono.com/"            error
+          check "http://pertono.com/preise/"     301 "https://pertono.com/preise/"     error
+          check "https://pertono.com/"           200 ""                                error
+          check "http://www.pertono.com/"        301 "https://pertono.com/"            warning
+          check "https://www.pertono.com/"       301 "https://pertono.com/"            warning
+          [ "$fail" = "0" ] || exit 1
+          echo "HTTP-zu-HTTPS-Umleitung OK."

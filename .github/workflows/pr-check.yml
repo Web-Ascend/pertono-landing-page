@@ -41,7 +41,8 @@ concurrency:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Versionierter Runner wie im Deploy (Audit 2026-10, LP2-8i).
+    runs-on: ubuntu-24.04
     # Hänger-Schutz wie im Deploy: npm ci und ein Astro-Build sind eine Sache
     # von Minuten. Alles darüber ist ein stehengebliebener Runner, und ohne
     # Timeout blockiert der den Job bis zum 6-Stunden-Default.
@@ -49,18 +50,29 @@ jobs:
     steps:
       - name: Code auschecken
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
 
-      # Reihenfolge und Befehle absichtlich identisch zu deploy.yml. Laufen die
-      # beiden auseinander, prüft dieser Job etwas anderes als das, was später
-      # ausgeliefert wird — dann ist er schlimmer als kein Check.
-      - run: npm ci
+      # Reihenfolge und Befehle absichtlich identisch zum build-Job in
+      # deploy.yml. Laufen die beiden auseinander, prüft dieser Job etwas
+      # anderes als das, was später ausgeliefert wird — dann ist er schlimmer
+      # als kein Check. --ignore-scripts: kein Paket in der Lockfile braucht
+      # ein Install-Skript, also darf auch keines eins ausführen.
+      - run: npm ci --ignore-scripts
 
       - name: Type-check
         run: npm run check
 
       - name: Build
         run: npm run build
+
+      # Nur ein Hinweis im Log, kein Blocker (Audit 2026-10, LP2-6): Die
+      # Abhängigkeiten sind reines Build-Werkzeug, die ausgelieferte Site
+      # enthält keines davon. Ein roter Pull Request wegen eines Dev-Server-
+      # Advisories würde den Blick aufs Wesentliche verstellen — gesehen
+      # werden soll es trotzdem.
+      - name: npm audit (nur Hinweis)
+        continue-on-error: true
+        run: npm audit --package-lock-only
