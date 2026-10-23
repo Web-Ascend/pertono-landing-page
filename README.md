@@ -87,8 +87,11 @@ jedem Pull Request auf `main` `npm ci`, `npm run check` und `npm run build`
 aus — dieselben Befehle in derselben Reihenfolge wie der Deploy, nur vor dem
 Merge statt danach. Der Job hat weder Secrets noch ein Environment und lädt
 nichts hoch, ist also auch für einen Pull Request aus einem Fork unbedenklich.
-Als *Required Check* in den Branch-Protection-Regeln hinterlegt, kommt kein
-Branch mehr nach `main`, dessen Build bricht.
+Seine Wirkung hängt an einem Ruleset für `main`, das es noch nicht gibt
+(Stand Audit 2026-10-22: `main` ungeschützt, ein direkter Push deployt sofort):
+erst mit *Pull Request erforderlich*, dem Job `check` als *Required Status
+Check* und verbotenem Force-Push kommt kein Branch mehr nach `main`, dessen
+Build bricht. Einrichtung unter *Settings → Rules → Rulesets*.
 
 ## Deployment: Checkdomain per SFTP
 
@@ -101,8 +104,7 @@ vor dem Upload, GitHub-gehosteter Runner statt self-hosted, weil dieses Repo
 öffentlich ist, und der Zielpfad als Secret statt im Klartext.)
 
 **Jede Seite liegt in `dist/` als `index.php`, nicht als `index.html`.** Die
-Seite bleibt statisch und ohne eigenes Client-JavaScript (einziges Skript: das
-selbst gehostete Plausible von `insights.pertono.com`): `scripts/wrap-php.mjs` setzt
+Seite bleibt statisch und ohne Client-JavaScript: `scripts/wrap-php.mjs` setzt
 nach `astro build` vor jede Seite einen PHP-Vorspann, der nur die
 Security-Header setzt und dann das HTML ausgibt. Grund: Beim Hoster steht nginx
 vor Apache und liefert vorhandene `.html`-Dateien direkt aus, ohne Apache und
