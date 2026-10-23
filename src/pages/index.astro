@@ -53,10 +53,13 @@ const structuredData = {
   noSuffix
   description="Mitglieder, Beiträge, SEPA-Lastschrift und Kassenbuch für deinen Verein. Jede Kernaufgabe in unter zwei Minuten am Handy, ohne Einarbeitung. Server in der EU."
 >
+  <!-- `<` als <: JSON.stringify escapt kein `</script>`. Heute stehen hier
+       nur Konstanten; die Ersetzung ist der Gurt für den Tag, an dem ein Feld
+       aus Content-Frontmatter kommt (Audit 2026-10, LP2-8b). -->
   <script
     type="application/ld+json"
     is:inline
-    set:html={JSON.stringify(structuredData)}
+    set:html={JSON.stringify(structuredData).replace(/</g, "\\u003c")}
     slot="head"
   />
 

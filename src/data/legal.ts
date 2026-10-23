@@ -126,8 +126,8 @@ export const processors = {
  */
 export const dataLocation = {
   /**
-   * Aus dem Supabase-Dashboard des Projekts "pertono" (kwxzafsmuidhadyfrouy)
-   * abgelesen am 16.09.2026: Region eu-west-1.
+   * Aus dem Supabase-Dashboard des Projekts "pertono" abgelesen am
+   * 16.09.2026: Region eu-west-1.
    */
   supabaseRegion: "eu-west-1 (AWS-Region Irland, EU)",
   /**
