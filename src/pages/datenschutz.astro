@@ -62,7 +62,9 @@ import {
     in Pertono erfasst, ist der jeweilige Verein Verantwortlicher; wir verarbeiten
     sie als Auftragsverarbeiter nach Art. 28 DSGVO. Den zugehörigen
     Auftragsverarbeitungsvertrag stellen wir jedem Verein bereit; die dort
-    genehmigten Unterauftragnehmer sind dieselben, die in Abschnitt 4 stehen.
+    genehmigten Unterauftragnehmer sind dieselben, die in Abschnitt 4 stehen —
+    mit Ausnahme des Servers der Besucherstatistik, der keine Vereinsdaten
+    erhält.
   </p>
 
   <h2>3. Welche Daten wir verarbeiten</h2>
@@ -108,11 +110,38 @@ import {
     Die Web-App lädt Schriften und Grafik-Engine nicht von fremden Servern
     nach, beides ist mitgeliefert, und dass das so bleibt, prüft jeder Build.
     Eine Ausnahme gibt es: Auf der Anmeldeseite lädt die App die
-    Sicherheitsprüfung von Cloudflare (siehe unten). Dienste zur Analyse,
-    Reichweitenmessung oder Absturzberichterstattung sind in keiner Fassung der
-    App eingebunden. Fremde Server spricht die App damit nur in zwei Fällen an:
+    Sicherheitsprüfung von Cloudflare (siehe unten). Die Web-App zählt
+    außerdem Besuche mit einer Statistiksoftware, die wir selbst betreiben
+    (siehe „Besucherstatistik der Web-App“); die Android-App zählt nichts.
+    Dienste zur Absturzberichterstattung sind in keiner Fassung der App
+    eingebunden. Fremde Server spricht die App damit nur in zwei Fällen an:
     für die Sicherheitsprüfung bei der Anmeldung und für
     Push-Benachrichtigungen.
+  </p>
+
+  <h3>Besucherstatistik der Web-App</h3>
+  <p>
+    Wenn du die Web-App unter <code>app.pertono.com</code> öffnest, zählen wir
+    den Besuch mit Plausible Analytics, einer Statistiksoftware ohne Cookies.
+    Wir betreiben sie selbst unter <code>insights.pertono.com</code>; der
+    Server steht bei {processors.analyticsHost}. Dein Browser lädt dafür ein
+    Skript von dort und meldet den Seitenaufruf: die Adresse der Seite ohne den
+    Teil hinter dem <code>#</code> — also nie, welche Ansicht der App du
+    öffnest, und keine Einladungscodes —, die Seite, von der du kommst,
+    Browser, Betriebssystem, Gerätetyp und das Land, das sich aus deiner
+    IP-Adresse ergibt.
+  </p>
+  <p>
+    Deine IP-Adresse und die Kennung deines Browsers speichern wir dabei
+    nicht. Plausible bildet aus beiden zusammen mit einem täglich wechselnden
+    Zufallswert eine Prüfsumme, die nur erkennt, ob dieser Besuch an diesem
+    Tag schon gezählt wurde; nach 24 Stunden lässt sie sich niemandem mehr
+    zuordnen. Es werden keine Cookies gesetzt und nichts auf deinem Gerät
+    gespeichert; ein Profil über mehrere Tage oder Websites entsteht nicht.
+    Daten deines Vereins oder deines Kontos erreichen die Statistik nicht.
+    Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes
+    Interesse ist zu wissen, wie viele Menschen die Web-App erreichen und
+    woher sie kommen.
   </p>
 
   <h3>Sicherheitsprüfung bei der Anmeldung</h3>

@@ -111,6 +111,15 @@ export const processors = {
    * im pertono-Repo), die per SFTP auf denselben Webspace spiegeln.
    */
   webHost: "Checkdomain",
+  /**
+   * Server der Besucherstatistik insights.pertono.com: Plausible Community
+   * Edition, selbst betrieben (Antwort von /api/health nennt postgres und
+   * clickhouse, davor Caddy). Die IP 178.104.124.198 liegt laut RIPE im Netz
+   * CLOUD-NBG1 der Hetzner Online GmbH, Land DE — geprüft am 25.10.2026.
+   * Eingebunden nur in der Web-App (pertono-Repo: app/web/index.html), nicht
+   * auf dieser Website und nicht in der Android-App.
+   */
+  analyticsHost: "Hetzner Online GmbH (Rechenzentrum Nürnberg, Deutschland)",
 };
 
 /**
@@ -155,7 +164,7 @@ export const dataLocation = {
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "7. Oktober 2026";
+export const lastUpdated = "25. Oktober 2026";
 
 const allValues = [
   ...Object.values(provider),
