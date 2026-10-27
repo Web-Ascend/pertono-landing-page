@@ -36,8 +36,9 @@ export const TODO = "[ausfüllen]";
  * anwaltlich, sondern gegen den Code: Audit vom 16.09.2026 ergab keine
  * Formulare, kein Fetch, keine externen Skripte, keine Cookies und keinen
  * Web-Storage in src/ (einzige externe Verweise: der Play-Store-Link und das
- * schema.org-Vokabular im JSON-LD); Abschnitt 7 der Datenschutzerklärung
- * beschreibt genau diesen Zustand. Die anwaltliche Prüfung folgt im
+ * schema.org-Vokabular im JSON-LD). Seit 27.10.2026 kommt genau ein externes
+ * Skript dazu: das selbst betriebene Plausible (insights.pertono.com) im
+ * BaseLayout. Abschnitt 7 der Datenschutzerklärung beschreibt diesen Zustand. Die anwaltliche Prüfung folgt im
  * Kanzlei-Mandat und ist auf Entscheidung des Inhabers bewusst kein
  * Index-Blocker mehr. Wer der Site eine neue Datenverarbeitung hinzufügt
  * (Formular, Analytics, externes Embed), stellt hier zurück auf false,
@@ -116,8 +117,9 @@ export const processors = {
    * Edition, selbst betrieben (Antwort von /api/health nennt postgres und
    * clickhouse, davor Caddy). Die IP 178.104.124.198 liegt laut RIPE im Netz
    * CLOUD-NBG1 der Hetzner Online GmbH, Land DE — geprüft am 25.10.2026.
-   * Eingebunden nur in der Web-App (pertono-Repo: app/web/index.html), nicht
-   * auf dieser Website und nicht in der Android-App.
+   * Eingebunden in der Web-App (pertono-Repo: app/web/index.html) und seit
+   * 27.10.2026 auf dieser Website (src/layouts/BaseLayout.astro), nicht in
+   * der Android-App.
    */
   analyticsHost: "Hetzner Online GmbH (Rechenzentrum Nürnberg, Deutschland)",
 };
@@ -164,7 +166,7 @@ export const dataLocation = {
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "25. Oktober 2026";
+export const lastUpdated = "27. Oktober 2026";
 
 const allValues = [
   ...Object.values(provider),
