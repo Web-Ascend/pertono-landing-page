@@ -166,7 +166,7 @@ export const dataLocation = {
 };
 
 /** "Stand"-Datum der Datenschutzerklärung. */
-export const lastUpdated = "27. Oktober 2026";
+export const lastUpdated = "6. November 2026";
 
 const allValues = [
   ...Object.values(provider),
