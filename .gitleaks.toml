@@ -1,0 +1,12 @@
+# gitleaks-Konfiguration (SEC-8, Security-Audit 2026-10-22).
+# Standardregeln von gitleaks plus Ausnahmen fuer Dateien, die bewusst
+# schluesselaehnliche Werte enthalten. gitleaks 8.24 kennt genau eine
+# [allowlist]; jede Pfadgruppe steht mit Begruendung darueber. Neue
+# Ausnahmen nur mit Begruendung -- eine Ausnahme verdeckt auch echte
+# Secrets in derselben Datei.
+
+[extend]
+useDefault = true
+
+# Keine Ausnahmen noetig (gitleaks dir gegen main am 2026-11-08 ohne
+# Treffer). Eine Ausnahme kaeme als [allowlist] mit paths hierher.

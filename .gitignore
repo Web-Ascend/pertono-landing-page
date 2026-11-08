@@ -9,3 +9,25 @@ node_modules/
 .env.*
 # OS/editor noise
 .DS_Store
+
+# --- Secret-/Signing-Material und Dumps (SEC-8, Security-Audit 2026-10-22) ---
+# Nichts davon gehoert ins Repository; secret-scan.yml (gitleaks) prueft
+# zusaetzlich jeden PR und jeden Push auf main.
+!.env.example
+*.pem
+*.key
+*.p12
+*.p8
+*.pfx
+*.jks
+*.keystore
+*.mobileprovision
+key.properties
+*service-account*.json
+*service_account*.json
+*firebase-adminsdk*.json
+credentials.json
+dump*.sql
+latest_dump*.sql
+*.dump
+*.backup
